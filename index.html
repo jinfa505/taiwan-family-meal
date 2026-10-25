@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
+  <title>三餐煮什麼 — 全家大小都愛吃的台灣家常菜</title>
+
+  <!-- iOS PWA 加入主畫面專屬設定 (免上架費、全螢幕體驗) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="三餐煮什麼" />
+  <meta name="theme-color" content="#9A3412" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%239A3412%22/><text x=%2250%22 y=%2268%22 font-size=%2256%22 text-anchor=%22middle%22>🍲</text></svg>" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FFFDF7',
+            warmCard: '#FFF8EC',
+            ink: '#1C1917',
+            brand: '#9A3412',
+            brandLight: '#FFEDD5',
+            lineGreen: '#06C755',
+            ytRed: '#CC0000'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 掌廚者友善（適老化介面）：字體放大 1.5 倍、高對比、防誤觸大按鈕 */
+    html {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+      background-color: #FFFDF7;
+      color: #1C1917;
+      -webkit-tap-highlight-color: rgba(154, 52, 18, 0.15);
+    }
+    body {
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+      font-size: 22px;
+      line-height: 1.6;
+    }
+    /* 超大核取方塊 */
+    .senior-checkbox {
+      width: 34px;
+      height: 34px;
+      accent-color: #15803D;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    /* 語音脈衝動畫 */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { transform: scale(1.03); box-shadow: 0 0 0 18px rgba(220, 38, 38, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    .listening-pulse {
+      animation: pulse-ring 1.5s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-cream text-ink selection:bg-amber-200">
+
+  <!-- ================= 頂部導覽列 (固定置頂，字大清晰) ================= -->
+  <header class="sticky top-0 z-40 bg-[#9A3412] text-white shadow-md px-4 py-3">
+    <div class="max-w-2xl mx-auto flex items-center justify-between gap-2">
+      <button onclick="showHomeView()" class="flex items-center gap-2 text-left focus:outline-none">
+        <span class="text-4xl" aria-hidden="true">🍲</span>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight">三餐煮什麼</h1>
+          <p id="headerSeasonSubtitle" class="text-amber-100 text-lg font-medium">點一下食材圖示，馬上找全家料理</p>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('aiModal')" class="bg-amber-100 text-[#7C2D12] font-bold text-lg px-3 py-2 rounded-xl border-2 border-amber-300 shadow active:scale-95">
+          ⚙️ AI 設定
+        </button>
+        <button onclick="openModal('iosGuideModal')" class="bg-white text-[#9A3412] font-bold text-lg px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+          📱 放桌面
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 主容器 ================= -->
+  <main class="max-w-2xl mx-auto px-4 pt-5 pb-20">
+
+    <!-- =================================================================
+         畫面 A：首頁（視覺化點食材圖示過濾 ＋ 8大料理方式 ＋ 全家三餐菜單）
+         ================================================================= -->
+    <section id="homeView" class="space-y-6">
+
+      <!-- 1. 【核心升級】點食材大圖示立即過濾菜單 (Visual Ingredient Icon Grid) -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-4xl">👆</span>
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900">
+                點一下食材圖示，馬上找菜！
+              </h2>
+              <p class="text-lg sm:text-xl text-stone-600 font-bold">
+                標有「🌟當季」是 <span id="currentMonthLabel" class="text-[#9A3412] underline">10月</span> 最鮮甜好菜
+              </p>
+            </div>
+          </div>
+
+          <!-- 月份切換與清除重選 -->
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-1 text-lg font-bold text-stone-700 bg-warmCard px-3 py-1.5 rounded-xl border-2 border-amber-400">
+              <span>🗓️</span>
+              <select id="monthSelector" onchange="onMonthChange(this.value)" class="bg-transparent font-extrabold text-[#9A3412] text-xl focus:outline-none">
+                <option value="1">1月</option>
+                <option value="2">2月</option>
+                <option value="3">3月</option>
+                <option value="4">4月</option>
+                <option value="5">5月</option>
+                <option value="6">6月</option>
+                <option value="7">7月</option>
+                <option value="8">8月</option>
+                <option value="9">9月</option>
+                <option value="10">10月</option>
+                <option value="11">11月</option>
+                <option value="12">12月</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <!-- 食材 6 大分類切換 (預設顯示「⭐ 常用與最愛」，畫面清爽不雜亂！) -->
+        <div class="bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-3 space-y-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-lg sm:text-xl font-extrabold text-[#7C2D12]">
+              📂 先選食材攤位分類（點過的食材會自動收進「⭐常用最愛」）：
+            </span>
+            <button
+              id="favEditModeBtn"
+              onclick="toggleFavoriteEditMode()"
+              class="text-lg font-extrabold px-3 py-1 rounded-xl border-2 border-amber-600 bg-white text-[#9A3412] active:scale-95"
+            >
+              ⭐ 點此設定常用釘選
+            </button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="ingGroupTabs">
+            <button onclick="setIngGroup('favorite')" data-group="favorite" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-4 border-[#9A3412] bg-[#9A3412] text-white shadow flex items-center justify-center gap-1.5">
+              <span>⭐</span><span>常用與最愛</span>
+            </button>
+            <button onclick="setIngGroup('meat')" data-group="meat" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
+              <span>🥩</span><span>豬/雞/牛肉</span>
+            </button>
+            <button onclick="setIngGroup('seafood')" data-group="seafood" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
+              <span>🐟</span><span>海鮮魚蝦蛤</span>
+            </button>
+            <button onclick="setIngGroup('egg_tofu')" data-group="egg_tofu" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
+              <span>🥚</span><span>蛋/豆腐/豆干</span>
+            </button>
+            <button onclick="setIngGroup('leafy_melon')" data-group="leafy_melon" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
+              <span>🥬</span><span>葉菜與瓜果</span>
+            </button>
+            <button onclick="setIngGroup('root_mushroom')" data-group="root_mushroom" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
+              <span>🍄</span><span>根莖與菇筍</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 目前分類小提示 -->
+        <div id="ingCategoryHintBar" class="text-lg sm:text-xl font-bold text-stone-700 bg-stone-100 px-4 py-2 rounded-xl border border-stone-300 flex items-center justify-between flex-wrap gap-2">
+          <span id="ingCategoryHintText">⭐ 這裡顯示您最常點選與釘選的食材，畫面清爽好找！</span>
+        </div>
+
+        <!-- 視覺化大圖示網格 (3欄或4欄超大圖片按鈕，一點就過濾) -->
+        <div id="visualIngredientGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-1"></div>
+
+        <!-- 已選擇的食材狀態條 (點擊後立即顯示過濾結果數量 + 一鍵跳到菜單或清除) -->
+        <div id="selectedIngredientsBanner" class="hidden bg-amber-100 border-3 border-[#9A3412] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">🧺</span>
+            <div>
+              <div class="text-xl font-extrabold text-[#7C2D12]" id="selectedIngSummaryText">
+                已選：高麗菜
+              </div>
+              <div class="text-lg font-bold text-stone-700" id="selectedIngCountText">
+                在下方找到 3 道相關料理 👇
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="scrollToRecipes()" class="flex-1 sm:flex-initial bg-[#9A3412] text-white font-extrabold text-xl px-4 py-2.5 rounded-xl shadow">
+              👀 看篩選結果
+            </button>
+            <button onclick="clearSearch()" class="bg-white text-red-700 border-2 border-red-400 font-extrabold text-xl px-4 py-2.5 rounded-xl">
+              ✕ 清除重選
+            </button>
+          </div>
+        </div>
+
+        <!-- 摺疊/展開：語音或手動輸入其他食材 + AI 配菜 -->
+        <div class="pt-2 border-t-2 border-stone-200 space-y-3">
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <!-- 語音輸入大按鈕 -->
+            <button
+              id="voiceSearchBtn"
+              onclick="toggleVoiceRecognition()"
+              class="flex-1 py-4 px-4 rounded-2xl bg-[#B91C1C] hover:bg-[#991B1B] active:scale-[0.99] text-white font-extrabold text-xl sm:text-2xl shadow flex items-center justify-center gap-2 border-4 border-red-900 transition"
+            >
+              <span id="voiceBtnIcon" class="text-3xl">🎙️</span>
+              <span id="voiceBtnText">找不到圖示？點此開口唸食材</span>
+            </button>
+
+            <!-- AI 主廚即時配菜按鈕 -->
+            <button
+              id="aiGenerateBtn"
+              onclick="generateAIRecipeFromIngredients()"
+              class="flex-1 py-4 px-4 rounded-2xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-xl sm:text-2xl shadow flex items-center justify-center gap-2 border-4 border-amber-900 transition"
+            >
+              <span class="text-3xl">✨</span>
+              <span id="aiGenerateBtnText">請 AI 用所選食材配新菜</span>
+            </button>
+          </div>
+
+          <!-- 隱藏式/輔助文字輸入框 -->
+          <div class="relative">
+            <input
+              id="ingredientInput"
+              type="text"
+              placeholder="點上方食材圖示會自動帶入，也可在此打字搜尋..."
+              oninput="handleIngredientInputChange()"
+              class="w-full text-xl sm:text-2xl font-bold px-4 py-3 rounded-2xl border-2 border-stone-300 focus:border-[#9A3412] focus:outline-none bg-stone-50 text-stone-900 placeholder:text-stone-400"
+            />
+          </div>
+
+          <!-- 語音狀態提示 -->
+          <p id="voiceStatusMsg" class="hidden text-center text-2xl font-extrabold text-red-700 bg-red-50 py-3 px-4 rounded-xl border-2 border-red-300"></p>
+        </div>
+      </div>
+
+      <!-- 2. 料理方式（烹調法）8 大分類 ＋「🚫 不吃油炸」一鍵過濾開關 -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 flex items-center gap-2">
+              <span>🍳</span> 想用哪種方式煮？
+            </h2>
+            <p class="text-xl text-stone-600 font-bold">
+              炒、滷、蒸、燉、煎、烤、涼拌、炸，點一下立即篩選
+            </p>
+          </div>
+
+          <!-- 🚫 不吃油炸 一鍵過濾大按鈕 -->
+          <button
+            id="noDeepFryToggleBtn"
+            onclick="toggleNoDeepFry()"
+            class="px-4 py-3 rounded-2xl font-extrabold text-xl sm:text-2xl border-4 border-emerald-800 bg-emerald-700 text-white shadow flex items-center gap-2 active:scale-95"
+          >
+            <span id="noDeepFryIcon" class="text-2xl">🚫</span>
+            <span id="noDeepFryText">不看油炸料理</span>
+          </button>
+        </div>
+
+        <!-- 8 大料理方式大按鈕網格 -->
+        <div id="cookingMethodTabs" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+
+        <!-- 目前選擇的料理方式說明橫幅 -->
+        <div id="cookingMethodBenefitBanner" class="bg-amber-50 border-2 border-amber-400 rounded-2xl px-4 py-3 text-xl font-bold text-[#7C2D12]"></div>
+      </div>
+
+      <!-- 3. 每日三餐與便當分類篩選大頁籤 -->
+      <div id="recipeSectionAnchor" class="space-y-3 scroll-mt-24">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="recipeListHeading" class="text-2xl sm:text-3xl font-extrabold text-stone-900">
+            👨‍👩‍👧‍👦 全家三餐推薦菜單
+          </h2>
+          <button onclick="pickRandomThreeMeals()" class="bg-amber-100 hover:bg-amber-200 text-[#7C2D12] font-extrabold text-xl px-4 py-2 rounded-2xl border-2 border-amber-500 active:scale-95">
+            🎲 換一批順序
+          </button>
+        </div>
+
+        <!-- 大按鈕時段切換 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="mealCategoryTabs">
+          <button onclick="setMealFilter('all')" data-filter="all" class="meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-[#9A3412] bg-[#9A3412] text-white shadow">
+            全部菜色
+          </button>
+          <button onclick="setMealFilter('早餐活力')" data-filter="早餐活力" class="meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-400 bg-white text-stone-800">
+            🌅 早餐活力
+          </button>
+          <button onclick="setMealFilter('下飯主菜')" data-filter="下飯主菜" class="meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-400 bg-white text-stone-800">
+            🍚 下飯主菜
+          </button>
+          <button onclick="setMealFilter('暖心靚湯')" data-filter="暖心靚湯" class="meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-400 bg-white text-stone-800">
+            🍲 暖心靚湯
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. 食譜大字卡片列表 -->
+      <div id="recipeCardsContainer" class="space-y-5"></div>
+
+    </section>
+
+
+    <!-- =================================================================
+         畫面 B：單道料理頁面「黃金畫面配置 (Top to Bottom)」
+         ================================================================= -->
+    <section id="detailView" class="hidden space-y-6">
+
+      <!-- 返回首頁超大按鈕 -->
+      <button
+        onclick="showHomeView()"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-stone-800 text-white font-extrabold text-2xl px-6 py-4 rounded-2xl shadow-md border-4 border-stone-950 active:scale-95"
+      >
+        <span class="text-3xl">⬅️</span>
+        <span>返回看其他料理</span>
+      </button>
+
+      <!-- 【黃金配置 1】頂部標題區：超大字體菜名 ＋ 料理方式標籤 ＋ 預估料理時間 ＋ 全家特色標籤 -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-6 shadow-md space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="detailMethodBadge" class="bg-emerald-100 text-emerald-950 border-2 border-emerald-600 font-extrabold text-xl px-4 py-1.5 rounded-full">
+            🥬 家常快炒
+          </span>
+          <span id="detailMealBadge" class="bg-amber-100 text-[#9A3412] border-2 border-amber-400 font-extrabold text-xl px-4 py-1.5 rounded-full">
+            下飯主菜
+          </span>
+          <span id="detailTimeBadge" class="bg-stone-100 text-stone-800 border-2 border-stone-400 font-extrabold text-xl px-4 py-1.5 rounded-full">
+            ⏱️ 約 15 分鐘
+          </span>
+        </div>
+
+        <h2 id="detailTitle" class="text-4xl sm:text-5xl font-black text-stone-900 leading-tight tracking-wide">
+          櫻花蝦炒高麗菜
+        </h2>
+
+        <!-- 全家餐桌標籤 -->
+        <div id="detailFamilyTags" class="flex flex-wrap gap-2.5 pt-1"></div>
+
+        <!-- 👨‍👩‍👧‍👦 全家共食小撇步 -->
+        <div id="detailFamilyTipBox" class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 text-xl font-bold text-[#7C2D12]"></div>
+      </div>
+
+      <!-- 【黃金配置 5】貼心輔助開關：煮菜時保持螢幕恆亮 (Wake Lock) -->
+      <div class="bg-amber-50 border-4 border-amber-600 rounded-3xl p-5 shadow-sm">
+        <button
+          id="wakeLockToggleBtn"
+          onclick="toggleWakeLock()"
+          class="w-full flex items-center justify-between gap-4 text-left focus:outline-none"
+        >
+          <div class="flex items-center gap-3">
+            <span id="wakeLockIcon" class="text-4xl">💡</span>
+            <div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-stone-900">
+                煮菜時保持螢幕恆亮
+              </div>
+              <div id="wakeLockSubtext" class="text-xl font-bold text-stone-700">
+                點此開啟，手油油看食譜螢幕不會黑掉
+              </div>
+            </div>
+          </div>
+          <div id="wakeLockPill" class="px-5 py-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-500 bg-white text-stone-800 shrink-0">
+            未開啟
+          </div>
+        </button>
+      </div>
+
+      <!-- 【黃金配置 2】影片教學區：YouTube 官方內嵌 (預設跳過片頭) ＋ 下方「去 YouTube 放大看」輔助大按鈕 -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h3 class="text-3xl font-extrabold text-stone-900 flex items-center gap-2">
+            <span>📺</span> 影片教學
+          </h3>
+          <span id="detailStartSecNote" class="text-xl font-bold text-[#9A3412] bg-amber-100 px-3 py-1 rounded-xl border border-amber-300">
+            已自動跳過片頭閒聊
+          </span>
+        </div>
+
+        <!-- 16:9 最大化內嵌播放器容器 -->
+        <div id="youtubeEmbedWrapper" class="w-full aspect-video bg-stone-900 rounded-2xl overflow-hidden border-4 border-stone-700 shadow-inner">
+          <iframe
+            id="youtubeIframe"
+            class="w-full h-full"
+            src=""
+            title="YouTube 料理教學影片"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <p id="detailChannelCredit" class="text-xl text-stone-600 font-bold"></p>
+
+        <!-- 輔助大按鈕（外部跳轉 Deep Link 喚起原生 YouTube App） -->
+        <a
+          id="youtubeExternalBtn"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full py-5 px-6 rounded-2xl bg-[#CC0000] hover:bg-[#990000] active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-red-950 text-center"
+        >
+          <span class="text-3xl">🔍</span>
+          <span>看不清楚？點此去 YouTube 放大觀看</span>
+        </a>
+      </div>
+
+      <!-- 【黃金配置 3】買菜清單區：可點擊打勾的食材與份量清單 ＋ 綠色高對比大按鈕「🟢 一鍵傳送到 LINE 備忘」 -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-6 shadow-md space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 class="text-3xl font-extrabold text-stone-900 flex items-center gap-2">
+              <span>🧺</span> 買菜清單（全家 3～4 人份）
+            </h3>
+            <p class="text-xl text-stone-600 font-bold mt-1">
+              點一下食材可以打勾記號，再傳到 LINE 給自己或家人代買
+            </p>
+          </div>
+        </div>
+
+        <!-- 食材 Checkbox 大字列表 -->
+        <div id="detailIngredientsList" class="divide-y-2 divide-stone-200 border-2 border-stone-300 rounded-2xl overflow-hidden bg-cream"></div>
+
+        <!-- 綠色高對比大按鈕：一鍵傳送到 LINE 備忘 -->
+        <button
+          onclick="shareIngredientsToLine()"
+          class="w-full py-5 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05a847] active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-green-900"
+        >
+          <span class="text-3xl">🟢</span>
+          <span>一鍵傳送到 LINE 備忘</span>
+        </button>
+      </div>
+
+      <!-- 【黃金配置 4】料理步驟區：3～4 個超大字體步驟摘要字卡 ＋ 語音朗讀輔助 -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-6 shadow-md space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 class="text-3xl font-extrabold text-stone-900 flex items-center gap-2">
+              <span>👩‍🍳</span> 簡單料理步驟
+            </h3>
+            <p class="text-xl text-stone-600 font-bold mt-1">
+              精簡大字重點，手油油不用一直按手機暫停
+            </p>
+          </div>
+
+          <!-- 語音朗讀步驟按鈕 -->
+          <button
+            id="speakStepsBtn"
+            onclick="toggleSpeakSteps()"
+            class="bg-amber-100 hover:bg-amber-200 text-[#7C2D12] font-extrabold text-2xl px-5 py-3 rounded-2xl border-3 border-amber-500 shadow flex items-center gap-2 active:scale-95"
+          >
+            <span class="text-3xl">🔊</span>
+            <span id="speakStepsBtnText">唸步驟給我聽</span>
+          </button>
+        </div>
+
+        <!-- 3~4 個超大字體步驟卡片 -->
+        <div id="detailStepsList" class="space-y-4"></div>
+
+        <!-- 版權合規聲明尾註 -->
+        <div class="pt-3 border-t-2 border-stone-200 text-lg text-stone-600 font-medium">
+          📌 <strong>版權合規說明</strong>：本頁食材屬客觀事實陳述；料理步驟經系統重寫為精簡大字摘要；教學影片透過 YouTube 官方 IFrame API 合法嵌入，無使用任何盜圖或抖音資源。
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ================= 彈窗 1：iOS 加入主畫面教學 ================= -->
+  <div id="iosGuideModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-stone-900 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-extrabold text-[#9A3412]">📱 如何放到 iPhone 桌面？</h3>
+        <button onclick="closeModal('iosGuideModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
+      </div>
+
+      <p class="text-2xl text-stone-800 font-bold leading-relaxed">
+        不用去商店下載、也不用花錢！只要在 iPhone 的 <strong>Safari 瀏覽器</strong> 做這 3 個動作，桌面上就會出現「三餐煮什麼」App 圖示：
+      </p>
+
+      <ol class="space-y-4 text-2xl font-bold text-stone-900">
+        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+          <span class="text-[#9A3412] font-black">第一步：</span><br/>
+          用 iPhone 的 <strong>Safari</strong> 打開這個網頁，點一下畫面正下方中間的 <strong>「分享」按鈕（方框往上箭頭 📤）</strong>。
+        </li>
+        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+          <span class="text-[#9A3412] font-black">第二步：</span><br/>
+          選單往上滑，找到並點選 <strong>「加入主畫面 ➕」</strong>。
+        </li>
+        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+          <span class="text-[#9A3412] font-black">第三步：</span><br/>
+          點右上角的 <strong>「新增」</strong>，就完成了！以後從桌面點開就是全螢幕大字 App！
+        </li>
+      </ol>
+
+      <button onclick="closeModal('iosGuideModal')" class="w-full py-4 bg-[#9A3412] text-white font-extrabold text-2xl rounded-2xl">
+        我知道了，關閉視窗
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ================= 彈窗 2：Gemini AI API 設定 ================= -->
+  <div id="aiModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-stone-900 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-extrabold text-[#9A3412]">🤖 AI 智慧配菜設定</h3>
+        <button onclick="closeModal('aiModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
+      </div>
+
+      <p class="text-xl text-stone-700 font-bold leading-relaxed">
+        點選食材圖示或用麥克風唸出冰箱食材時，系統除了即時過濾內建食譜，還能呼叫 <strong>Google Gemini AI</strong> 依照選定的<strong>料理方式（炒、滷、燉、蒸、煎、烤、涼拌、炸）</strong>即時編寫「全家大小都愛吃的 3～4 步大字台式家常食譜」。
+      </p>
+
+      <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 space-y-2">
+        <label class="block text-xl font-extrabold text-stone-900" for="geminiApiKeyInput">
+          🔑 輸入 Google Gemini API Key（選填）：
+        </label>
+        <input
+          id="geminiApiKeyInput"
+          type="password"
+          placeholder="AIzaSy..."
+          class="w-full text-xl font-mono p-3 rounded-xl border-2 border-stone-400 bg-white"
+        />
+        <p class="text-lg text-stone-600 font-medium">
+          ※ 金鑰僅儲存在這支手機的瀏覽器內（localStorage），不會上傳至任何第三方伺服器。若未填寫，系統也會使用「內建台菜主廚智慧合成引擎」自動生成步驟！
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="saveApiKey()" class="flex-1 py-4 bg-[#15803D] text-white font-extrabold text-2xl rounded-2xl">
+          💾 儲存設定
+        </button>
+        <button onclick="closeModal('aiModal')" class="py-4 px-6 bg-stone-200 text-stone-800 font-extrabold text-2xl rounded-2xl">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= 核心資料與互動邏輯腳本 ================= -->
+  <script>
+    // =========================================================================
+    // 1. 視覺化冰箱常備與時令食材圖示字典 (36 種台灣市場常見食材，分為 5 大攤位 + ⭐常用最愛)
+    // =========================================================================
+    const VISUAL_INGREDIENTS = [
+      // 【攤位 1：🥩 豬/雞/牛肉】
+      { name: '五花肉',   matchKeywords: ['五花肉', '控肉', '白肉'], icon: '🥓', group: 'meat', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '梅花肉片', matchKeywords: ['梅花肉', '豬肉片', '肉片', '肉絲'], icon: '🥩', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '豬絞肉',   matchKeywords: ['豬絞肉', '絞肉', '瓜仔肉'], icon: '🧆', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '排骨',     matchKeywords: ['排骨', '里肌排', '小排'], icon: '🍖', group: 'meat', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '雞腿',     matchKeywords: ['雞腿', '雞肉'], icon: '🍗', group: 'meat', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '雞胸/雞里肌', matchKeywords: ['雞胸', '雞里肌', '雞丁', '雞肉'], icon: '🐔', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '牛肉',     matchKeywords: ['牛肉', '牛腩', '牛肉片'], icon: '🐂', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '香腸/臘肉', matchKeywords: ['香腸', '臘肉', '培根'], icon: '🌭', group: 'meat', defaultFav: false, peakMonths: [1,2,11,12] },
+
+      // 【攤位 2：🐟 海鮮魚蝦蛤】
+      { name: '鮮魚/鱸魚', matchKeywords: ['鱸魚', '鮮魚', '魚片', '鯛魚'], icon: '🐟', group: 'seafood', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '鮭魚',     matchKeywords: ['鮭魚'], icon: '🍣', group: 'seafood', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '鯖魚/白帶魚', matchKeywords: ['鯖魚', '白帶魚', '午仔魚'], icon: '🐠', group: 'seafood', defaultFav: false, peakMonths: [9,10,11,12,1,2] },
+      { name: '蛤蜊',     matchKeywords: ['蛤蜊', '海瓜子'], icon: '🐚', group: 'seafood', defaultFav: true,  peakMonths: [3,4,5,6,7,8,9,10] },
+      { name: '白蝦/蝦仁', matchKeywords: ['白蝦', '蝦仁', '鮮蝦', '蝦'], icon: '🦐', group: 'seafood', defaultFav: false, peakMonths: [4,5,6,7,8,9,10,11] },
+      { name: '透抽/中卷', matchKeywords: ['透抽', '中卷', '小卷', '花枝', '魷魚'], icon: '🦑', group: 'seafood', defaultFav: false, peakMonths: [5,6,7,8,9,10] },
+      { name: '櫻花蝦/吻仔魚', matchKeywords: ['櫻花蝦', '吻仔魚', '蝦米', '小魚乾'], icon: '🐟', group: 'seafood', defaultFav: false, peakMonths: [3,4,5,6,9,10,11] },
+
+      // 【攤位 3：🥚 蛋/豆腐/豆干】
+      { name: '雞蛋',     matchKeywords: ['雞蛋', '水煮蛋', '蒸蛋', '菜脯蛋', '滑蛋'], icon: '🥚', group: 'egg_tofu', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '嫩豆腐/板豆腐', matchKeywords: ['嫩豆腐', '板豆腐', '豆腐'], icon: '🧈', group: 'egg_tofu', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '豆干/豆皮', matchKeywords: ['豆干', '豆皮', '百頁'], icon: '🟫', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '皮蛋/鹹蛋', matchKeywords: ['皮蛋', '鹹蛋', '金沙'], icon: '🥚', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '冬粉/粉絲', matchKeywords: ['冬粉', '粉絲', '米粉'], icon: '🍜', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+      { name: '貢丸/魚丸', matchKeywords: ['貢丸', '魚丸', '丸子'], icon: '🍡', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+
+      // 【攤位 4：🥬 葉菜與瓜果】 (對齊農糧署時令月份)
+      { name: '高麗菜',   matchKeywords: ['高麗菜'], icon: '🥬', group: 'leafy_melon', defaultFav: true,  peakMonths: [10,11,12,1,2,3,4], isVeggie: true },
+      { name: '地瓜葉',   matchKeywords: ['地瓜葉'], icon: '🌿', group: 'leafy_melon', defaultFav: true,  peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
+      { name: '空心菜/A菜', matchKeywords: ['空心菜', 'A菜', '大陸妹', '小白菜'], icon: '🥗', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
+      { name: '青江菜/菠菜', matchKeywords: ['青江菜', '菠菜', '芥蘭', '油菜'], icon: '🥬', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3], isVeggie: true },
+      { name: '花椰菜',   matchKeywords: ['花椰菜', '青花菜'], icon: '🥦', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4], isVeggie: true },
+      { name: '番茄',     matchKeywords: ['番茄'], icon: '🍅', group: 'leafy_melon', defaultFav: true,  peakMonths: [11,12,1,2,3,4], isVeggie: true },
+      { name: '絲瓜',     matchKeywords: ['絲瓜'], icon: '🥒', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
+      { name: '苦瓜/冬瓜', matchKeywords: ['苦瓜', '冬瓜', '大黃瓜'], icon: '🍈', group: 'leafy_melon', defaultFav: false, peakMonths: [5,6,7,8,9,10], isVeggie: true },
+      { name: '小黃瓜/櫛瓜', matchKeywords: ['小黃瓜', '櫛瓜'], icon: '🥒', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
+      { name: '茄子/四季豆', matchKeywords: ['茄子', '四季豆', '敏豆'], icon: '🍆', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
+
+      // 【攤位 5：🍄 根莖與菇筍】
+      { name: '白蘿蔔/菜脯', matchKeywords: ['白蘿蔔', '菜脯', '蘿蔔'], icon: '🥕', group: 'root_mushroom', defaultFav: true,  peakMonths: [10,11,12,1,2,3], isVeggie: true },
+      { name: '馬鈴薯',   matchKeywords: ['馬鈴薯'], icon: '🥔', group: 'root_mushroom', defaultFav: false, peakMonths: [12,1,2,3,4], isVeggie: true },
+      { name: '洋蔥/紅蘿蔔', matchKeywords: ['洋蔥', '紅蘿蔔'], icon: '🧅', group: 'root_mushroom', defaultFav: false, peakMonths: [11,12,1,2,3,4], isVeggie: true },
+      { name: '玉米/玉米筍', matchKeywords: ['玉米', '玉米筍'], icon: '🌽', group: 'root_mushroom', defaultFav: true,  peakMonths: [9,10,11,12,1,2,3], isVeggie: true },
+      { name: '山藥/南瓜', matchKeywords: ['山藥', '南瓜', '芋頭'], icon: '🍠', group: 'root_mushroom', defaultFav: false, peakMonths: [9,10,11,12,1,2], isVeggie: true },
+      { name: '香菇/杏鮑菇', matchKeywords: ['香菇', '杏鮑菇', '鴻喜菇', '金針菇', '菇'], icon: '🍄', group: 'root_mushroom', defaultFav: false, peakMonths: [9,10,11,12,1,2,3], isVeggie: true },
+      { name: '黑木耳/竹筍', matchKeywords: ['黑木耳', '木耳', '竹筍', '茭白筍'], icon: '🎍', group: 'root_mushroom', defaultFav: false, peakMonths: [5,6,7,8,9,10], isVeggie: true }
+    ];
+
+    const ING_GROUP_DESCRIPTIONS = {
+      favorite: '⭐ 這裡顯示您「最常點選」與「手動釘選」的常用食材，一打開就看得到，畫面清爽不眼花！',
+      meat: '🥩 豬肉、雞肉、牛肉與排骨攤位（點選後會自動幫您記進常用清單）',
+      seafood: '🐟 鮮魚、鮭魚、蝦仁、蛤蜊與透抽攤位',
+      egg_tofu: '🥚 冰箱常備的雞蛋、豆腐、豆干、冬粉與丸子攤位',
+      leafy_melon: '🥬 台灣四季葉菜、高麗菜、番茄與瓜果攤位',
+      root_mushroom: '🍄 根莖類（蘿蔔、馬鈴薯、洋蔥、玉米）與鮮菇竹筍攤位'
+    };
+
+    // =========================================================================
+    // 2. 台灣家庭廚房 8 大料理方式（烹調法）定義
+    // =========================================================================
+    const COOKING_METHODS = [
+      {
+        code: 'all',
+        label: '全部煮法',
+        icon: '🍽️',
+        benefit: '💡 全部煮法：涵蓋快炒、紅燒滷肉、清蒸、燉湯、香煎、氣炸烤物等全家大小最愛的台式家常菜（可隨時切換右上角「不看油炸」開關）。'
+      },
+      {
+        code: '家常快炒',
+        label: '家常快炒',
+        icon: '🥬',
+        benefit: '🥬 家常快炒：台灣餐桌靈魂！熱炒下飯肉片、炒蛋與脆甜季節時蔬，10～15 分鐘快速開飯。'
+      },
+      {
+        code: '紅燒／滷製',
+        label: '紅燒／滷製',
+        icon: '🥘',
+        benefit: '🥘 紅燒／滷製：全家人的「白飯殺手」！滷一鍋控肉、馬鈴薯燉肉或紅燒豆腐，小孩帶便當也超愛。'
+      },
+      {
+        code: '清蒸／電鍋',
+        label: '清蒸／電鍋',
+        icon: '♨️',
+        benefit: '♨️ 清蒸／電鍋：免顧火、零油煙！按下電鍋就能同時準備其他菜，蒸魚、蒸蛋鮮甜多汁。'
+      },
+      {
+        code: '燉煮／煲湯',
+        label: '燉煮／煲湯',
+        icon: '🍲',
+        benefit: '🍲 燉煮／煲湯：全家圍爐必備的一鍋暖湯！排骨湯、雞湯甘甜順口，幫上班族兒女與小孩補元氣。'
+      },
+      {
+        code: '香煎／乾煎',
+        label: '香煎／乾煎',
+        icon: '🍳',
+        benefit: '🍳 香煎／乾煎：少許油煎出恰恰焦香！菜脯蛋、乾煎鮭魚、香煎雞腿排，不用油炸就香氣逼人。'
+      },
+      {
+        code: '烤箱／氣炸',
+        label: '烤箱／氣炸',
+        icon: '🔥',
+        benefit: '🔥 烤箱／氣炸（少油烤）：用氣炸鍋或烤箱逼出食材油脂，小孩愛吃的酥脆口感、大人安心的少油健康！'
+      },
+      {
+        code: '川燙／涼拌',
+        label: '川燙／涼拌',
+        icon: '🥗',
+        benefit: '🥗 川燙／涼拌：滾水燙熟拌入蒜泥或麻醬（如蒜泥白肉、涼拌小黃瓜），夏天開胃零油煙！'
+      },
+      {
+        code: '金黃油炸',
+        label: '金黃油炸',
+        icon: '🍤',
+        benefit: '🍤 金黃油炸：懷舊炸排骨、鹽酥料理（若家人不吃油炸，點一下右上角「🚫 不看油炸」即可全部隱藏）。'
+      }
+    ];
+
+    // =========================================================================
+    // 3. 內建台灣家庭三餐菜色資料庫 (完整涵蓋 8 大料理方式與所有視覺食材)
+    // =========================================================================
+    const BUILTIN_RECIPES = [
+      {
+        id: 'tw-003',
+        title: '餐廳級滑嫩家常番茄炒蛋',
+        emoji: '🍅',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 10,
+        seasonMonths: [1, 2, 3, 4, 5, 10, 11, 12],
+        familyTags: ['#白飯殺手', '#小孩超愛淋飯', '#10分鐘上菜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：起鍋前多留一點酸甜紅湯汁，孫子跟年輕人最愛直接舀湯汁拌白飯，長輩吃也滑嫩順口！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '台式番茄炒蛋 滑嫩 家常菜',
+        youtubeStartSec: 30,
+        youtubeChannel: '台灣媽媽味十分鐘快手菜',
+        ingredients: [
+          { name: '牛番茄', amount: '3 顆（切塊）' },
+          { name: '雞蛋', amount: '5 顆' },
+          { name: '青蔥', amount: '2 支（切蔥花）' },
+          { name: '番茄醬', amount: '1.5 大匙（讓湯汁更濃郁下飯）' },
+          { name: '鹽巴與砂糖', amount: '各 1 小匙' }
+        ],
+        steps: [
+          '雞蛋打散加少許鹽巴；牛番茄洗乾淨切成好入口的塊狀。',
+          '熱鍋加油，倒入蛋液快速滑炒到「七分熟半凝固」就先盛起來備用。',
+          '同一鍋放入番茄塊、一匙番茄醬與半碗水，悶煮 3 分鐘直到番茄軟化出濃汁。',
+          '把滑蛋倒回鍋裡拌勻裹上紅汁，撒上蔥花即可澎湃上桌！'
+        ]
+      },
+      {
+        id: 'tw-001',
+        title: '鮮香脆甜櫻花蝦炒高麗菜',
+        emoji: '🥬',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [10, 11, 12, 1, 2, 3, 4],
+        familyTags: ['#熱炒店人氣', '#鮮甜清脆', '#全家必備青菜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：菜梗先下鍋加半碗水悶 1 分鐘再下菜葉，這樣菜葉清脆、菜梗軟甜，全家老少都愛吃！',
+        youtubeVideoId: 'M7lc1UVf-VE',
+        youtubeSearchQuery: '櫻花蝦炒高麗菜 阿基師 家常菜',
+        youtubeStartSec: 42,
+        youtubeChannel: '台灣家常料理精選',
+        ingredients: [
+          { name: '台灣高麗菜', amount: '半顆（手撕大片）' },
+          { name: '櫻花蝦（或蝦米）', amount: '2 大匙' },
+          { name: '蒜頭', amount: '4 瓣（拍碎）' },
+          { name: '紅蘿蔔片', amount: '少許（配色用）' },
+          { name: '米酒與鹽巴', amount: '各 1 小匙' }
+        ],
+        steps: [
+          '高麗菜洗淨用手撕成大片，比較厚的菜梗與菜葉分開放。',
+          '熱鍋加少許油，先放蒜頭與櫻花蝦，小火炒出濃濃海味香氣。',
+          '先下高麗菜梗與半碗熱水，蓋鍋悶 1.5 分鐘讓菜梗變軟甜。',
+          '最後放入高麗菜葉大火翻炒均勻，加鹽巴調味即可盛盤！'
+        ]
+      },
+      {
+        id: 'tw-005',
+        title: '鮮甜翠綠蛤蜊絲瓜煲',
+        emoji: '🥒',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [4, 5, 6, 7, 8, 9, 10],
+        familyTags: ['#湯汁拌飯超鮮', '#極軟好咬', '#夏日人氣菜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：絲瓜悶出的天然甜湯融合蛤蜊海味，連一滴鹽都不用多加，淋在白飯上小孩超愛！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '蛤蜊絲瓜 不發黑 鮮甜煮法',
+        youtubeStartSec: 25,
+        youtubeChannel: '農糧署當季鮮蔬料理',
+        ingredients: [
+          { name: '台灣絲瓜', amount: '1 條（削皮切厚片）' },
+          { name: '吐沙蛤蜊', amount: '250 克' },
+          { name: '薑絲', amount: '1 小撮' },
+          { name: '米酒', amount: '1 大匙' }
+        ],
+        steps: [
+          '絲瓜削去外皮切成約 1 公分厚片，才不會一煮就化掉。',
+          '鍋中放一點點油與薑絲，把絲瓜片鋪平，加半碗水蓋鍋悶 4 分鐘。',
+          '打開鍋蓋看到絲瓜變軟出水，把洗淨的蛤蜊鋪在絲瓜上面。',
+          '淋上一匙米酒再蓋鍋 2 分鐘，蛤蜊全開就馬上關火上桌！'
+        ]
+      },
+      {
+        id: 'tw-014',
+        title: '古早味焦糖香滷五花控肉（滷肉鍋）',
+        emoji: '🥘',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 40,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#國民白飯殺手', '#帶便當首選', '#兒孫最愛'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：滷鍋裡順便放幾顆雞蛋與板豆腐、豆干，小孩愛吃滷蛋、大人愛吃控肉、長輩夾軟嫩滷豆腐！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '古早味滷肉 紅燒五花肉 家常做法',
+        youtubeStartSec: 35,
+        youtubeChannel: '台式媽媽傳家手路菜',
+        ingredients: [
+          { name: '帶皮五花肉（或梅花肉塊）', amount: '500 克（切大塊）' },
+          { name: '水煮雞蛋與板豆腐/豆干', amount: '4 顆 + 1 盒' },
+          { name: '青蔥、蒜頭、老薑', amount: '各 1 小把' },
+          { name: '醬油與米酒', amount: '各半碗' },
+          { name: '冰糖', amount: '1.5 大匙' }
+        ],
+        steps: [
+          '五花肉塊放入鍋中（不用加油），中小火把表面煎到微金黃、逼出多餘豬油。',
+          '放入冰糖、蒜頭、薑片與蔥段翻炒上色，淋入醬油與米酒炒出濃郁醬香。',
+          '加入熱水蓋過肉塊，放入水煮雞蛋與豆腐豆干，煮滾後轉小火（或移入電鍋外鍋 2 杯水）。',
+          '慢滷 35 分鐘至肉塊軟嫩Q彈、湯汁油亮，一上桌全家人多吃兩碗飯！'
+        ]
+      },
+      {
+        id: 'tw-007',
+        title: '鮮甜入味馬鈴薯紅蘿蔔燉肉',
+        emoji: '🥔',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 25,
+        seasonMonths: [1, 2, 3, 4, 9, 10, 11, 12],
+        familyTags: ['#小朋友最愛', '#帶便當不走味', '#一鍋有肉有菜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：洋蔥炒軟後會釋放天然甜味，馬鈴薯燉到綿密鬆軟，不論配白飯或拌麵都超受歡迎！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '馬鈴薯燉肉 豬肉 家常做法',
+        youtubeStartSec: 40,
+        youtubeChannel: '家庭常備便當主菜',
+        ingredients: [
+          { name: '五花肉片或梅花豬肉片', amount: '300 克' },
+          { name: '馬鈴薯', amount: '2 顆（切滾刀塊）' },
+          { name: '紅蘿蔔與洋蔥', amount: '各 1 顆（切塊）' },
+          { name: '醬油與味醂（或冰糖）', amount: '各 2 大匙' }
+        ],
+        steps: [
+          '熱鍋放少許油，先下洋蔥塊炒到變軟透明，再放豬肉片炒至變色。',
+          '放入馬鈴薯塊與紅蘿蔔塊拌炒均勻。',
+          '加入醬油、冰糖與 1.5 碗水，蓋上鍋蓋中小火悶煮 15 分鐘。',
+          '煮到馬鈴薯鬆軟、湯汁微濃稠即可起鍋，鹹甜入味全家大小搶著吃！'
+        ]
+      },
+      {
+        id: 'tw-008',
+        title: '餐廳級清蒸破布子嫩豆腐鮮魚',
+        emoji: '🐟',
+        mealSlot: '下飯主菜',
+        cookingMethod: '清蒸／電鍋',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#零油煙電鍋菜', '#鮮甜多汁', '#老少咸宜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：盤底鋪滿嫩豆腐吸收鮮魚與破布子的甘甜湯汁，小朋友愛吃滑豆腐、大人長輩吃鮮魚！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '破布子清蒸鱸魚 豆腐 電鍋',
+        youtubeStartSec: 30,
+        youtubeChannel: '台式海鮮家常料理',
+        ingredients: [
+          { name: '新鮮鱸魚或無刺鯛魚片', amount: '1 尾 / 350 克' },
+          { name: '嫩豆腐', amount: '1 盒（切厚片）' },
+          { name: '甘樹子（破布子）連汁', amount: '2.5 大匙' },
+          { name: '薑絲與青蔥絲', amount: '1 小把' },
+          { name: '米酒與香油', amount: '各 1 大匙' }
+        ],
+        steps: [
+          '嫩豆腐切厚片鋪在大深盤底部，把洗淨擦乾的鮮魚放在豆腐上面。',
+          '均勻淋上破布子（連甘甜湯汁）與 1 大匙米酒，鋪上薑絲。',
+          '放進大同電鍋（外鍋 1 杯水）或蒸鍋大火蒸 10～12 分鐘。',
+          '出鍋後鋪上滿滿青蔥絲、淋一點熱香油，鮮美無腥味！'
+        ]
+      },
+      {
+        id: 'tw-009',
+        title: '大同電鍋古早味瓜仔肉滑蒸蛋',
+        emoji: '🥚',
+        mealSlot: '早餐活力',
+        cookingMethod: '清蒸／電鍋',
+        isDeepFried: false,
+        cookTimeMins: 18,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#電鍋免顧火', '#布丁般滑嫩', '#早午晚餐百搭'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：電鍋蓋子記得夾一根筷子留小縫，蒸出來的蛋就像布丁一樣零氣孔，小孩跟長輩都超愛！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '電鍋 瓜仔肉蒸蛋 家常做法',
+        youtubeStartSec: 25,
+        youtubeChannel: '台灣電鍋懶人料理室',
+        ingredients: [
+          { name: '雞蛋', amount: '4 顆' },
+          { name: '脆瓜（蔭瓜）罐頭', amount: '3 大匙（切碎連湯汁）' },
+          { name: '豬絞肉（五花絞肉）', amount: '120 克' },
+          { name: '溫開水', amount: '約蛋液的 1.5 倍' }
+        ],
+        steps: [
+          '把脆瓜切細碎，跟豬絞肉、兩匙脆瓜湯汁拌勻鋪在深碗底部。',
+          '雞蛋打散後加入溫開水輕輕攪勻，過篩倒進碗裡。',
+          '放進大同電鍋，外鍋加 1 杯水，鍋蓋夾一根筷子留小縫。',
+          '開關跳起來撒點蔥花就完成！鹹甜滑嫩超配飯！'
+        ]
+      },
+      {
+        id: 'tw-004',
+        title: '黃金香菇山藥燉土雞腿湯',
+        emoji: '🍄',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 35,
+        seasonMonths: [9, 10, 11, 12, 1, 2, 3],
+        familyTags: ['#全家補元氣', '#湯頭甘甜不油', '#雞腿肉超嫩'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：山藥在最後 10 分鐘才下鍋，就能同時保有鬆軟口感又不會讓湯變混濁，全家喝了暖呼呼！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '香菇山藥雞湯 電鍋 養生',
+        youtubeStartSec: 45,
+        youtubeChannel: '台灣家庭四季煲湯',
+        ingredients: [
+          { name: '切塊帶骨雞腿肉', amount: '500 克' },
+          { name: '台灣山藥', amount: '300 克（切大塊）' },
+          { name: '乾香菇（或鮮香菇）', amount: '8 朵（泡軟）' },
+          { name: '紅棗與枸杞', amount: '1 小把' },
+          { name: '老薑片', amount: '4 片' }
+        ],
+        steps: [
+          '乾香菇先用溫水泡軟（香菇水留著別倒掉）；雞腿肉熱水川燙 2 分鐘沖淨。',
+          '先把雞腿肉、香菇、薑片與香菇水下鍋，小火慢燉 20 分鐘。',
+          '再放入切塊的台灣山藥與枸杞，繼續煮 10 分鐘。',
+          '起鍋前加一小匙鹽巴與米酒提香，湯頭清甜回甘！'
+        ]
+      },
+      {
+        id: 'tw-002',
+        title: '夜市名店級清甜玉米白蘿蔔排骨湯',
+        emoji: '🍲',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 35,
+        seasonMonths: [10, 11, 12, 1, 2, 3, 4],
+        familyTags: ['#小孩愛啃甜玉米', '#蘿蔔入口即化', '#電鍋一鍵搞定'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：加一根黃甜玉米跟白蘿蔔一起燉，湯頭自然甘甜不用放味精，孫子啃玉米、大人長輩吃排骨蘿蔔！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '玉米白蘿蔔排骨湯 清甜做法',
+        youtubeStartSec: 35,
+        youtubeChannel: '台式暖心燉湯教學',
+        ingredients: [
+          { name: '台灣白蘿蔔', amount: '1 條（削厚皮切塊）' },
+          { name: '黃甜玉米', amount: '1 根（切段）' },
+          { name: '豬小排骨', amount: '400 克' },
+          { name: '老薑片與芹菜珠', amount: '少許' }
+        ],
+        steps: [
+          '排骨冷水下鍋煮滾 2 分鐘，撈起沖洗乾淨，湯頭才會清澈甘甜。',
+          '白蘿蔔削皮要削厚一點（才不會苦），與甜玉米一起切塊。',
+          '把排骨、白蘿蔔、玉米與薑片放入電鍋內鍋，加水蓋過食材（外鍋 2 杯水）。',
+          '開關跳起後悶 10 分鐘，加鹽巴與芹菜珠就完成囉！'
+        ]
+      },
+      {
+        id: 'tw-011',
+        title: '外酥內嫩脆皮黃金煎雞腿排＆菜脯蛋',
+        emoji: '🍳',
+        mealSlot: '早餐活力',
+        cookingMethod: '香煎／乾煎',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#不加一滴油乾煎', '#外皮焦脆肉多汁', '#全家搶食'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：雞腿皮朝下冷鍋直接乾煎，逼出的雞油剛好拿來順便煎一盤厚切菜脯蛋，一鍋兩道菜超省時！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '香煎去骨雞腿排 脆皮多汁做法',
+        youtubeStartSec: 30,
+        youtubeChannel: '台式鐵板家常料理',
+        ingredients: [
+          { name: '去骨大雞腿排', amount: '2 片' },
+          { name: '雞蛋與白蘿蔔乾（菜脯）', amount: '3 顆 + 2 大匙' },
+          { name: '蒜片與青蔥', amount: '少許' },
+          { name: '椒鹽或醬油膏', amount: '少許' }
+        ],
+        steps: [
+          '去骨雞腿排用紙巾擦乾水分，不需加油，「雞皮朝下」直接放入平底鍋。',
+          '中小火慢煎 6 分鐘，雞皮會逼出金黃雞油並變得酥脆，再翻面煎 4 分鐘至熟透盛起切塊。',
+          '利用鍋裡香氣滿滿的少許雞油，放入洗過瀝乾的菜脯碎炒香。',
+          '倒入打散的蔥花蛋液煎至兩面金黃，雞腿排配菜脯蛋一次上桌！'
+        ]
+      },
+      {
+        id: 'tw-012',
+        title: '免顧火居酒屋風氣炸鹽烤鯖魚＆杏鮑菇',
+        emoji: '🔥',
+        mealSlot: '下飯主菜',
+        cookingMethod: '烤箱／氣炸',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#氣炸烤箱免油煙', '#小孩愛吃椒鹽菇', '#豐富魚油'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：烤鯖魚的同時在旁邊鋪一圈滾刀切塊的杏鮑菇，魚油滴在菇上烤出來比鹽酥雞攤還香，卻完全不用油炸！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '氣炸鍋 烤鯖魚 杏鮑菇',
+        youtubeStartSec: 25,
+        youtubeChannel: '現代家庭無油煙氣炸料理',
+        ingredients: [
+          { name: '薄鹽鯖魚片（鮮魚）', amount: '2 片' },
+          { name: '杏鮑菇', amount: '3 根（切滾刀塊）' },
+          { name: '新鮮檸檬', amount: '半顆' },
+          { name: '椒鹽粉', amount: '少許' }
+        ],
+        steps: [
+          '鯖魚片退冰後用紙巾擦乾；杏鮑菇切滾刀塊拌一點點胡椒鹽。',
+          '完全不用加沙拉油！把鯖魚皮朝上、杏鮑菇圍在旁邊放進氣炸鍋或烤箱。',
+          '設定 180 度烘烤 12～14 分鐘，外皮金黃滋滋作響即可出爐。',
+          '鯖魚擠上檸檬汁、杏鮑菇撒點椒鹽，大人下酒配飯、小孩一口接一口！'
+        ]
+      },
+      {
+        id: 'tw-010',
+        title: '黑白切人氣王！蒜泥白肉佐燙地瓜葉',
+        emoji: '🥗',
+        mealSlot: '下飯主菜',
+        cookingMethod: '川燙／涼拌',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [3, 4, 5, 6, 7, 8, 9, 10],
+        familyTags: ['#100%無油煙', '#麵攤人氣招牌', '#清爽不油膩'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：同一鍋滾水先燙地瓜葉、再關火用餘溫燜熟五花肉薄片，肉片超軟嫩不乾柴，淋上蒜泥醬油膏全家秒殺！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '蒜泥白肉 肉片 軟嫩做法',
+        youtubeStartSec: 20,
+        youtubeChannel: '台灣小吃在家輕鬆做',
+        ingredients: [
+          { name: '五花肉火鍋薄片', amount: '300 克' },
+          { name: '台灣地瓜葉或空心菜', amount: '1 把' },
+          { name: '蒜泥與薑絲', amount: '2 大匙' },
+          { name: '醬油膏與香油', amount: '2 大匙 + 1 小匙' }
+        ],
+        steps: [
+          '煮一鍋滾水加少許鹽，先放入洗淨的地瓜葉燙 1 分半鐘，撈起鋪在大盤底。',
+          '同一鍋水加入薑片與一匙米酒，轉最小火放入五花肉薄片燙至變色即撈起。',
+          '把軟嫩的肉片鋪在地瓜葉上面。',
+          '蒜泥、醬油膏、少許溫水與香油調勻淋在肉片上，零油煙完成兩道菜的效果！'
+        ]
+      },
+      {
+        id: 'tw-013',
+        title: '懷舊鐵路便當古早味酥炸排骨（炸物）',
+        emoji: '🍤',
+        mealSlot: '下飯主菜',
+        cookingMethod: '金黃油炸',
+        isDeepFried: true,
+        cookTimeMins: 25,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#傳統油炸料理', '#便當主菜霸主', '#孫子回家必點'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：炸好後留一片切塊直接吃香酥口感；長輩要吃的那片可放進滷汁或電鍋稍微蒸 3 分鐘，變成軟嫩「滷排骨」！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '古早味炸排骨 軟嫩醃料做法',
+        youtubeStartSec: 40,
+        youtubeChannel: '台灣古早味辦桌菜',
+        ingredients: [
+          { name: '帶骨豬排骨（里肌排）', amount: '3 片（請肉攤拍鬆）' },
+          { name: '醬油、米酒、糖', amount: '各 1 大匙' },
+          { name: '五香粉與蒜泥', amount: '各 1 小匙' },
+          { name: '地瓜粉', amount: '4 大匙' }
+        ],
+        steps: [
+          '豬里肌排先用刀背拍鬆斷筋（這樣肉質才會軟嫩多汁不塞牙）。',
+          '用醬油、米酒、糖、五香粉與蒜泥抓醃 15 分鐘入味。',
+          '兩面薄薄沾上一層地瓜粉，靜置 3 分鐘讓粉反潮不脫落。',
+          '平底鍋放約 1 公分高的油（半煎炸更省油），中火炸至兩面金黃熟透即可切塊！'
+        ]
+      },
+      {
+        id: 'tw-015',
+        title: '熱炒店必點！鮮蝦花椰菜炒玉米筍木耳',
+        emoji: '🥦',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [1, 2, 3, 4, 9, 10, 11, 12],
+        familyTags: ['#五彩繽紛', '#蝦仁Q彈', '#小孩愛吃青花菜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：花椰菜先燙 1 分鐘再炒，不僅翠綠漂亮、梗也軟嫩好咬，配鮮蝦與木耳營養滿分！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '蝦仁炒花椰菜 玉米筍 家常做法',
+        youtubeStartSec: 25,
+        youtubeChannel: '台灣家庭健康快炒',
+        ingredients: [
+          { name: '綠花椰菜（青花菜）', amount: '1 朵（切小朵）' },
+          { name: '白蝦仁（鮮蝦）', amount: '200 克' },
+          { name: '玉米筍與黑木耳', amount: '各 1 小把' },
+          { name: '紅蘿蔔片與蒜末', amount: '少許' }
+        ],
+        steps: [
+          '花椰菜與玉米筍先放進滾水川燙 1 分鐘撈起瀝乾，保持翠綠又快熟。',
+          '熱鍋放少許油爆香蒜末，放入白蝦仁煎炒至兩面變紅微焦香。',
+          '倒入花椰菜、玉米筍、黑木耳與紅蘿蔔片大火拌炒。',
+          '加兩匙水與一小匙鹽巴悶炒 1 分鐘即可鮮甜上桌！'
+        ]
+      },
+      {
+        id: 'tw-016',
+        title: '餐廳招牌洋蔥滑蛋炒嫩牛肉片（或梅花豬）',
+        emoji: '🐂',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 10,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#牛肉滑嫩不柴', '#洋蔥甘甜', '#10分鐘扒光白飯'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：牛肉片下鍋前先抓一點點醬油與太白粉水，關火利用滑蛋餘溫拌熟，長輩與小孩咬起來像豆腐一樣嫩！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '洋蔥滑蛋炒牛肉 軟嫩做法',
+        youtubeStartSec: 30,
+        youtubeChannel: '台式熱炒主廚秘笈',
+        ingredients: [
+          { name: '牛肉火鍋肉片（或梅花豬肉片）', amount: '250 克' },
+          { name: '洋蔥', amount: '1 顆（切絲）' },
+          { name: '雞蛋', amount: '3 顆' },
+          { name: '青蔥段與醬油膏', amount: '1 把 + 1.5 大匙' }
+        ],
+        steps: [
+          '牛肉片先用 1 匙醬油與少許太白粉抓勻；洋蔥順紋切絲備用。',
+          '熱鍋先炒洋蔥絲至軟甜透明，放入牛肉片快炒至「六分熟」先盛起。',
+          '倒入打散的雞蛋液與半碗高湯，推炒至半熟滑蛋狀態。',
+          '把洋蔥牛肉倒回鍋中關火拌勻、撒上蔥段，極致滑嫩！'
+        ]
+      },
+      {
+        id: 'tw-017',
+        title: '金黃恰恰乾煎鮭魚佐蒜香菠菜／青江菜',
+        emoji: '🍣',
+        mealSlot: '下飯主菜',
+        cookingMethod: '香煎／乾煎',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#大刺好挑', '#零額外加油', '#豐富DHA全家補腦'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：鮭魚完全無細刺，最適合長輩與小朋友！煎鮭魚流出的天然魚油直接拿來炒一把青江菜或菠菜，一鍋搞定魚跟菜！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '乾煎鮭魚 不沾鍋 外酥內嫩',
+        youtubeStartSec: 30,
+        youtubeChannel: '台灣家庭少油海味廚房',
+        ingredients: [
+          { name: '輪切厚鮭魚片', amount: '1 大片（約 300 克）' },
+          { name: '菠菜或青江菜、空心菜', amount: '1 把（洗淨切段）' },
+          { name: '蒜頭', amount: '3 瓣（切片）' },
+          { name: '椒鹽與米酒', amount: '少許' }
+        ],
+        steps: [
+          '鮭魚片徹底擦乾水分，兩面抹少許鹽巴；平底鍋不加油直接放入鮭魚。',
+          '中小火兩面各煎 4 分鐘至表面金黃酥脆、熟透後先盛到盤子裡。',
+          '直接用鍋底香噴噴的少許鮭魚油爆香蒜片，放入青江菜或菠菜大火快炒 1 分鐘。',
+          '把翠綠青菜擺在鮭魚旁邊，撒點黑胡椒鹽即可開飯！'
+        ]
+      },
+      {
+        id: 'tw-018',
+        title: '客家風味豆干肉絲炒芹菜＆三杯透抽雙拼',
+        emoji: '🦑',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#豆干軟Q入味', '#下飯便當王', '#香氣滿屋'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：豆干先用熱水燙過再切條下鍋，吃起來會像海綿一樣吸飽肉絲醬香，不會硬邦邦！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '豆干炒肉絲 軟嫩入味做法',
+        youtubeStartSec: 25,
+        youtubeChannel: '台灣客家與台式家常菜',
+        ingredients: [
+          { name: '傳統黃豆干（或豆皮）', amount: '5 片（切條）' },
+          { name: '梅花豬肉絲（或透抽中卷圈）', amount: '200 克' },
+          { name: '芹菜段或青蔥段', amount: '1 把' },
+          { name: '蒜頭與醬油膏', amount: '3 瓣 + 2 大匙' }
+        ],
+        steps: [
+          '豆干切條後先用熱水燙 1 分鐘撈起（去除豆腥味並讓口感變軟嫩）。',
+          '熱鍋放少許油，先下肉絲（或透抽圈）與蒜末炒香至變色。',
+          '放入豆干條、2 大匙醬油膏與半碗水，翻炒 2 分鐘讓豆干吸飽湯汁。',
+          '起鍋前放入芹菜段與蔥段快速拌勻，香氣四溢超下飯！'
+        ]
+      },
+      {
+        id: 'tw-019',
+        title: '吸飽湯汁！鮮蝦粉絲煲（冬粉煲）＆蒜味小黃瓜',
+        emoji: '🍜',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#冬粉滑順好入口', '#小孩長輩搶著夾', '#一鍋當主食'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：冬粉剪成兩段再下鍋吸滿鮮蝦高湯，長輩與小孩夾起來方便又不噎口！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '鮮蝦粉絲煲 家常簡單做法',
+        youtubeStartSec: 30,
+        youtubeChannel: '台式煲仔家常料理',
+        ingredients: [
+          { name: '冬粉（粉絲）', amount: '3 把（溫水泡軟剪半）' },
+          { name: '白蝦或蝦仁（亦可換五花肉片）', amount: '10 隻' },
+          { name: '小黃瓜或青蔥', amount: '1 條' },
+          { name: '醬油、蠔油、蒜末', amount: '各 1.5 大匙' }
+        ],
+        steps: [
+          '冬粉先用溫水泡軟 5 分鐘，用料理剪刀剪成兩段方便全家夾取。',
+          '鍋中爆香蒜末與蔥白，放入白蝦兩面煎出紅亮蝦油。',
+          '加入 2 碗水、醬油與蠔油煮滾，放入泡軟的冬粉中小火悶煮 3 分鐘。',
+          '冬粉吸乾鮮美湯汁後撒上蔥花（旁邊可配涼拌小黃瓜），一鍋見底！'
+        ]
+      },
+      {
+        id: 'tw-020',
+        title: '電鍋甘甜鳳梨苦瓜雞湯（或冬瓜貢丸蛤蜊湯）',
+        emoji: '🍈',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 35,
+        seasonMonths: [4, 5, 6, 7, 8, 9, 10],
+        familyTags: ['#回甘不苦澀', '#電鍋免顧火', '#退火補元氣'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：把白苦瓜裡面的白膜用湯匙刮乾淨（或改用冬瓜配貢丸），燉出來只有甘甜沒有苦味，小孩也敢喝！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '苦瓜雞湯 冬瓜蛤蜊排骨湯 電鍋',
+        youtubeStartSec: 35,
+        youtubeChannel: '台灣四季家常湯品',
+        ingredients: [
+          { name: '白玉苦瓜或冬瓜', amount: '1 條（切厚塊）' },
+          { name: '帶骨雞腿肉或貢丸、魚丸', amount: '400 克' },
+          { name: '蛤蜊與薑片', amount: '150 克 + 4 片' },
+          { name: '蔭鳳梨醬（或鹽巴米酒）', amount: '2 大匙' }
+        ],
+        steps: [
+          '苦瓜對切用湯匙徹底刮除內部白膜（不苦秘訣！），切成好入口厚塊；冬瓜則削皮切塊。',
+          '雞腿肉先用滾水川燙沖淨（若用貢丸/魚丸則免川燙）。',
+          '把苦瓜（或冬瓜）、雞腿肉、薑片放入電鍋內鍋，加水蓋過食材（外鍋 2 杯水）。',
+          '跳起後加入蛤蜊再悶 3 分鐘，湯頭清澈甘甜！'
+        ]
+      },
+      {
+        id: 'tw-021',
+        title: '熱炒店下飯神菜！金沙鹹蛋苦瓜豆腐（或皮蛋豆腐）',
+        emoji: '🧈',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#鹹香起沙', '#拌飯超開胃', '#老少咸宜'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：鹹蛋黃炒出金黃泡沫後裹在嫩豆腐與杏鮑菇、苦瓜上，鹹香綿密超級下飯！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '金沙豆腐 鹹蛋苦瓜 家常做法',
+        youtubeStartSec: 25,
+        youtubeChannel: '台式熱炒名菜在家做',
+        ingredients: [
+          { name: '板豆腐或嫩豆腐', amount: '1 盒（切塊）' },
+          { name: '熟鹹蛋（或皮蛋）', amount: '2 顆（蛋黃蛋白分開壓碎）' },
+          { name: '苦瓜片或杏鮑菇、四季豆', amount: '1 碗' },
+          { name: '蒜末與蔥花', amount: '少許' }
+        ],
+        steps: [
+          '豆腐切塊先下鍋煎到表面金黃定型；蔬菜（苦瓜或四季豆、杏鮑菇）先燙軟瀝乾。',
+          '鍋中留少許油，放入壓碎的鹹蛋黃，小火炒到冒出金黃色細泡泡。',
+          '倒入豆腐塊與蔬菜、蒜末，翻炒讓每一塊都裹上金沙蛋黃。',
+          '最後撒入鹹蛋白碎與蔥花拌勻即可起鍋！'
+        ]
+      },
+      {
+        id: 'tw-022',
+        title: '塔香魚香茄子煲＆乾煸四季豆絞肉',
+        emoji: '🍆',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [4, 5, 6, 7, 8, 9, 10],
+        familyTags: ['#茄子亮紫不發黑', '#入口即化', '#白飯殺手'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：不用過油炸！茄子切段後加一匙油與白醋放滾水壓著燙 2 分鐘，一樣保持漂亮紫色又軟嫩少油！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '塔香茄子 絞肉 不油炸不變黑',
+        youtubeStartSec: 30,
+        youtubeChannel: '台灣媽媽少油省時料理',
+        ingredients: [
+          { name: '台灣長茄子或四季豆', amount: '2 條 / 1 把（切段）' },
+          { name: '豬絞肉', amount: '150 克' },
+          { name: '九層塔、蒜末、薑末', amount: '1 把' },
+          { name: '醬油膏與米酒', amount: '2 大匙' }
+        ],
+        steps: [
+          '滾水加一匙油與幾滴白醋，放入茄子段（用盤子稍微壓入水中）燙 2 分鐘撈起，亮紫不發黑！',
+          '熱鍋放豬絞肉炒出油脂與香氣，加入蒜末、薑末與醬油膏炒香。',
+          '倒入燙軟的茄子（或四季豆）與半碗水，中小火悶煮 2 分鐘入味。',
+          '起鍋前放入滿滿九層塔翻炒兩下，香氣撲鼻！'
+        ]
+      },
+      {
+        id: 'tw-023',
+        title: '蒜苗炒香腸臘肉佐清炒鮮筍高麗菜',
+        emoji: '🌭',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 5, 6, 7, 8, 11, 12],
+        familyTags: ['#電鍋先蒸再煎', '#鹹香下飯', '#年節家常必備'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：香腸先放電鍋蒸熟再切片下鍋爆炒蒜苗或竹筍，不僅完全不焦黑，肉質還特別軟嫩多汁！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: '蒜苗炒香腸 電鍋蒸 不焦黑做法',
+        youtubeStartSec: 25,
+        youtubeChannel: '台灣古早味家常小炒',
+        ingredients: [
+          { name: '台式香腸或臘肉、培根', amount: '3 條' },
+          { name: '蒜苗或青蔥、竹筍、高麗菜', amount: '2 支 / 1 碗' },
+          { name: '蒜片', amount: '4 瓣' }
+        ],
+        steps: [
+          '香腸先放進電鍋蒸熟（或水煮 8 分鐘），取出斜切成厚片，軟嫩又不怕烤焦。',
+          '平底鍋不加油，放入香腸片中小火煸出香氣與少許油脂。',
+          '放入蒜片、蒜苗白（或竹筍片、高麗菜）拌炒均勻。',
+          '起鍋前撒入青蒜苗尾段翻炒 10 秒即可澎湃上桌！'
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 4. 全域狀態管理（含「⭐最常點選與我的最愛」智慧記憶機制）
+    // =========================================================================
+    let currentMonth = new Date().getMonth() + 1;
+    let activeIngGroup = 'favorite'; // 預設進入「⭐ 常用與最愛」，畫面最乾淨清爽！
+    let isFavEditMode = false;       // 是否處於「點選以釘選/取消常用」設定模式
+    let activeMealFilter = 'all';
+    let activeCookingMethod = 'all';
+    let excludeDeepFried = true;
+    let currentRecipe = null;
+    let allRecipes = [...BUILTIN_RECIPES];
+    let wakeLockSentinel = null;
+    let speechRecognition = null;
+    let isListening = false;
+
+    // 讀取或初始化「我的最愛釘選清單」與「點選次數統計」
+    function getSavedFavorites() {
+      try {
+        const raw = localStorage.getItem('SENIOR_MEAL_FAV_INGS');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+      // 預設台灣家庭冰箱最常出現的 10 種國民食材
+      return VISUAL_INGREDIENTS.filter(i => i.defaultFav).map(i => i.name);
+    }
+
+    function saveFavorites(favArray) {
+      localStorage.setItem('SENIOR_MEAL_FAV_INGS', JSON.stringify(favArray));
+    }
+
+    function getUsageCounts() {
+      try {
+        const raw = localStorage.getItem('SENIOR_MEAL_USAGE_COUNTS');
+        if (raw) return JSON.parse(raw) || {};
+      } catch (e) {}
+      return {};
+    }
+
+    function recordIngredientUsage(ingredientName) {
+      const counts = getUsageCounts();
+      counts[ingredientName] = (counts[ingredientName] || 0) + 1;
+      localStorage.setItem('SENIOR_MEAL_USAGE_COUNTS', JSON.stringify(counts));
+
+      // 只要使用者點選過任何分類的食材，自動幫他加入「⭐ 常用與最愛」，下次打開第一頁就能直接看到！
+      const favs = getSavedFavorites();
+      if (!favs.includes(ingredientName)) {
+        favs.unshift(ingredientName);
+        saveFavorites(favs);
+      }
+    }
+
+    // 初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      const monthSelect = document.getElementById('monthSelector');
+      monthSelect.value = String(currentMonth);
+
+      const savedKey = localStorage.getItem('SENIOR_MEAL_GEMINI_KEY') || '';
+      document.getElementById('geminiApiKeyInput').value = savedKey;
+
+      renderVisualIngredients();
+      renderCookingMethodTabs();
+      renderRecipeList();
+
+      // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+    });
+
+    // =========================================================================
+    // 5. 【視覺化點食材圖示過濾系統 ＋ ⭐ 常用與最愛管理】
+    // =========================================================================
+    function setIngGroup(groupCode) {
+      activeIngGroup = groupCode;
+      document.querySelectorAll('.ing-group-tab').forEach(btn => {
+        if (btn.dataset.group === groupCode) {
+          btn.className = 'ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-4 border-[#9A3412] bg-[#9A3412] text-white shadow flex items-center justify-center gap-1.5';
+        } else {
+          btn.className = 'ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5';
+        }
+      });
+      renderVisualIngredients();
+    }
+
+    function toggleFavoriteEditMode() {
+      isFavEditMode = !isFavEditMode;
+      const btn = document.getElementById('favEditModeBtn');
+      if (isFavEditMode) {
+        btn.className = 'text-lg font-extrabold px-3.5 py-1.5 rounded-xl border-3 border-green-900 bg-[#15803D] text-white shadow active:scale-95';
+        btn.textContent = '✅ 完成常用設定（點此返回找菜）';
+      } else {
+        btn.className = 'text-lg font-extrabold px-3 py-1 rounded-xl border-2 border-amber-600 bg-white text-[#9A3412] active:scale-95';
+        btn.textContent = '⭐ 點此設定常用釘選';
+      }
+      renderVisualIngredients();
+    }
+
+    function togglePinFavorite(ingredientName, event) {
+      if (event) event.stopPropagation();
+      let favs = getSavedFavorites();
+      if (favs.includes(ingredientName)) {
+        if (favs.length <= 1) {
+          alert('💡 至少保留 1 個常用食材喔！');
+          return;
+        }
+        favs = favs.filter(n => n !== ingredientName);
+      } else {
+        favs.unshift(ingredientName);
+      }
+      saveFavorites(favs);
+      renderVisualIngredients();
+    }
+
+    function renderVisualIngredients() {
+      document.getElementById('currentMonthLabel').textContent = `${currentMonth}月`;
+      const grid = document.getElementById('visualIngredientGrid');
+      const hintTextEl = document.getElementById('ingCategoryHintText');
+      const currentInput = document.getElementById('ingredientInput').value;
+      const selectedTerms = currentInput.split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
+
+      const favList = getSavedFavorites();
+      const usageCounts = getUsageCounts();
+
+      if (isFavEditMode) {
+        hintTextEl.innerHTML = '📌 <strong>目前為「設定常用釘選」模式</strong>：點一下食材即可「⭐加入或移除常用最愛」，設好後請按右上角綠色「✅ 完成」！';
+      } else {
+        hintTextEl.textContent = ING_GROUP_DESCRIPTIONS[activeIngGroup] || '';
+      }
+
+      let visibleIngs = [];
+      if (activeIngGroup === 'favorite') {
+        // 取出在 favList 或已經被點選的食材，並依照「點選次數 (高到低)」自動排序，讓最常點的排在最前面！
+        visibleIngs = VISUAL_INGREDIENTS.filter(item =>
+          favsOrSelected(item.name, favList, selectedTerms)
+        ).sort((a, b) => {
+          const countA = usageCounts[a.name] || 0;
+          const countB = usageCounts[b.name] || 0;
+          if (countB !== countA) return countB - countA;
+          return favList.indexOf(a.name) - favList.indexOf(b.name);
+        });
+      } else {
+        visibleIngs = VISUAL_INGREDIENTS.filter(item => item.group === activeIngGroup);
+      }
+
+      grid.innerHTML = visibleIngs.map(item => {
+        const isSelected = selectedTerms.includes(item.name);
+        const isPinnedFav = favList.includes(item.name);
+        const usedTimes = usageCounts[item.name] || 0;
+        const isPeakSeason = item.peakMonths.includes(currentMonth) && item.isVeggie;
+
+        if (isFavEditMode) {
+          return `
+            <button
+              onclick="togglePinFavorite('${item.name}', event)"
+              class="relative p-3 rounded-2xl border-4 transition flex flex-col items-center justify-center gap-1 shadow-sm select-none active:scale-95 ${
+                isPinnedFav
+                  ? 'bg-amber-100 text-stone-900 border-[#9A3412] ring-2 ring-amber-400'
+                  : 'bg-stone-100 text-stone-500 border-stone-300 opacity-75'
+              }"
+            >
+              <span class="absolute top-1.5 right-1.5 text-lg font-black px-2 py-0.5 rounded-full ${isPinnedFav ? 'bg-[#9A3412] text-white' : 'bg-stone-300 text-stone-700'}">
+                ${isPinnedFav ? '⭐常用' : '＋加入'}
+              </span>
+              <span class="text-4xl sm:text-5xl leading-none my-1 mt-4">${item.icon}</span>
+              <span class="text-xl sm:text-2xl font-extrabold leading-tight text-center">${item.name}</span>
+            </button>
+          `;
+        }
+
+        return `
+          <button
+            onclick="toggleIngredientChip('${item.name}')"
+            class="relative p-3 rounded-2xl border-4 transition flex flex-col items-center justify-center gap-1 shadow-sm select-none active:scale-95 ${
+              isSelected
+                ? 'bg-[#9A3412] text-white border-[#7C2D12] ring-4 ring-amber-300'
+                : 'bg-warmCard text-stone-900 border-stone-300 hover:border-amber-600'
+            }"
+          >
+            ${isPeakSeason ? `
+              <span class="absolute -top-2.5 -right-2 bg-amber-400 text-stone-950 font-black text-xs px-2 py-0.5 rounded-full border border-stone-800 shadow">
+                🌟當季
+              </span>
+            ` : ''}
+            ${isSelected ? `
+              <span class="absolute top-1.5 left-1.5 text-lg">✅</span>
+            ` : usedTimes >= 2 ? `
+              <span class="absolute top-1 left-1.5 text-xs font-black px-1.5 py-0.5 rounded bg-amber-200 text-[#7C2D12]">🔥常點</span>
+            ` : isPinnedFav && activeIngGroup !== 'favorite' ? `
+              <span class="absolute top-1 left-1.5 text-sm">⭐</span>
+            ` : ''}
+            <span class="text-4xl sm:text-5xl leading-none my-1">${item.icon}</span>
+            <span class="text-xl sm:text-2xl font-extrabold leading-tight text-center">${item.name}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function favsOrSelected(name, favList, selectedTerms) {
+      return favList.includes(name) || selectedTerms.includes(name);
+    }
+
+    function toggleIngredientChip(ingredientName) {
+      const inputEl = document.getElementById('ingredientInput');
+      let terms = inputEl.value
+        .split(/[、,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (terms.includes(ingredientName)) {
+        terms = terms.filter(t => t !== ingredientName);
+      } else {
+        terms.push(ingredientName);
+        // 記錄點選次數，並自動加入「⭐ 常用與最愛」讓長輩下次打開直接看到
+        recordIngredientUsage(ingredientName);
+      }
+
+      inputEl.value = terms.join('、');
+      handleIngredientInputChange();
+    }
+
+    function scrollToRecipes() {
+      const anchor = document.getElementById('recipeSectionAnchor');
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // =========================================================================
+    // 6. 料理方式（8 大烹調法）與「🚫 不看油炸」過濾邏輯
+    // =========================================================================
+    function renderCookingMethodTabs() {
+      const container = document.getElementById('cookingMethodTabs');
+      const banner = document.getElementById('cookingMethodBenefitBanner');
+      const noFryBtn = document.getElementById('noDeepFryToggleBtn');
+      const noFryIcon = document.getElementById('noDeepFryIcon');
+      const noFryText = document.getElementById('noDeepFryText');
+
+      if (excludeDeepFried) {
+        noFryBtn.className = 'px-4 py-3 rounded-2xl font-extrabold text-xl sm:text-2xl border-4 border-emerald-900 bg-emerald-700 text-white shadow flex items-center gap-2 active:scale-95';
+        noFryIcon.textContent = '🚫';
+        noFryText.textContent = '已排除油炸（點此可顯示炸物）';
+      } else {
+        noFryBtn.className = 'px-4 py-3 rounded-2xl font-extrabold text-xl sm:text-2xl border-4 border-stone-400 bg-stone-100 text-stone-800 shadow flex items-center gap-2 active:scale-95';
+        noFryIcon.textContent = '🍤';
+        noFryText.textContent = '目前包含油炸（點此隱藏炸物）';
+      }
+
+      container.innerHTML = COOKING_METHODS.map(m => {
+        const isActive = activeCookingMethod === m.code;
+        const isFriedTab = m.code === '金黃油炸';
+
+        return `
+          <button
+            onclick="setCookingMethodFilter('${m.code}')"
+            class="py-3.5 px-3 rounded-2xl font-extrabold text-xl sm:text-2xl border-4 transition flex items-center justify-center gap-2 shadow-sm ${
+              isActive
+                ? 'bg-[#9A3412] text-white border-[#7C2D12] scale-[1.01]'
+                : isFriedTab && excludeDeepFried
+                  ? 'bg-stone-100 text-stone-400 border-stone-300'
+                  : 'bg-white text-stone-900 border-stone-400 hover:bg-amber-50'
+            }"
+          >
+            <span class="text-2xl">${m.icon}</span>
+            <span>${m.label}</span>
+          </button>
+        `;
+      }).join('');
+
+      const selectedObj = COOKING_METHODS.find(m => m.code === activeCookingMethod) || COOKING_METHODS[0];
+      banner.innerHTML = selectedObj.benefit;
+      updateAiButtonLabel();
+    }
+
+    function setCookingMethodFilter(methodCode) {
+      activeCookingMethod = methodCode;
+      if (methodCode === '金黃油炸' && excludeDeepFried) {
+        excludeDeepFried = false;
+      }
+      renderCookingMethodTabs();
+      renderRecipeList();
+    }
+
+    function toggleNoDeepFry() {
+      excludeDeepFried = !excludeDeepFried;
+      if (excludeDeepFried && activeCookingMethod === '金黃油炸') {
+        activeCookingMethod = 'all';
+      }
+      renderCookingMethodTabs();
+      renderRecipeList();
+    }
+
+    function updateAiButtonLabel() {
+      const val = document.getElementById('ingredientInput').value.trim();
+      const aiBtnText = document.getElementById('aiGenerateBtnText');
+      const methodText = activeCookingMethod === 'all'
+        ? '全家新家常菜'
+        : `「${activeCookingMethod}」新菜`;
+
+      if (val.length > 0) {
+        aiBtnText.textContent = `✨ 用「${val}」請 AI 配一道${methodText}`;
+      } else {
+        aiBtnText.textContent = `請 AI 用所選食材配一道${methodText}`;
+      }
+    }
+
+    function onMonthChange(newMonthStr) {
+      currentMonth = parseInt(newMonthStr, 10);
+      renderVisualIngredients();
+      renderRecipeList();
+    }
+
+    function handleIngredientInputChange() {
+      updateAiButtonLabel();
+      renderVisualIngredients();
+      renderRecipeList();
+    }
+
+    function clearSearch() {
+      document.getElementById('ingredientInput').value = '';
+      handleIngredientInputChange();
+    }
+
+    // =========================================================================
+    // 7. 語音輸入搜尋 (Speech-to-Text)
+    // =========================================================================
+    function toggleVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const statusEl = document.getElementById('voiceStatusMsg');
+      const btnEl = document.getElementById('voiceSearchBtn');
+      const btnTextEl = document.getElementById('voiceBtnText');
+      const btnIconEl = document.getElementById('voiceBtnIcon');
+
+      if (!SpeechRecognition) {
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '💡 請點一下下方文字框，再按手機鍵盤右下角的「🎙️麥克風」直接講話即可！';
+        document.getElementById('ingredientInput').focus();
+        return;
+      }
+
+      if (isListening && speechRecognition) {
+        speechRecognition.stop();
+        return;
+      }
+
+      speechRecognition = new SpeechRecognition();
+      speechRecognition.lang = 'zh-TW';
+      speechRecognition.continuous = false;
+      speechRecognition.interimResults = true;
+
+      speechRecognition.onstart = () => {
+        isListening = true;
+        btnEl.classList.add('listening-pulse');
+        btnIconEl.textContent = '🛑';
+        btnTextEl.textContent = '正在聽您說...（如：五花肉、高麗菜）';
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '🎙️ 請開始說話，例如：「高麗菜、五花肉、豆腐」...';
+      };
+
+      speechRecognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        const cleaned = transcript
+          .replace(/(我冰箱有|我有|我想煮|還有|跟|和|以及|。|，|,|\s+)/g, '、')
+          .replace(/^、+|、+$/g, '');
+        document.getElementById('ingredientInput').value = cleaned;
+        statusEl.textContent = `👂 聽到了：「${cleaned}」`;
+        handleIngredientInputChange();
+      };
+
+      speechRecognition.onerror = () => {
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '💡 可以直接點上方大圖示選食材，或再按一次麥克風喔！';
+      };
+
+      speechRecognition.onend = () => {
+        isListening = false;
+        btnEl.classList.remove('listening-pulse');
+        btnIconEl.textContent = '🎙️';
+        btnTextEl.textContent = '找不到圖示？點此開口唸食材';
+      };
+
+      speechRecognition.start();
+    }
+
+    // =========================================================================
+    // 8. AI 智慧食譜生成
+    // =========================================================================
+    async function generateAIRecipeFromIngredients() {
+      const rawInput = document.getElementById('ingredientInput').value.trim();
+      const targetIngredients = rawInput || '高麗菜、五花肉';
+      const chosenMethod = activeCookingMethod === 'all' ? '家常快炒' : activeCookingMethod;
+
+      const btn = document.getElementById('aiGenerateBtn');
+      const btnText = document.getElementById('aiGenerateBtnText');
+      const originalText = btnText.textContent;
+
+      btn.disabled = true;
+      btnText.textContent = `⏳ AI 正在設計「${chosenMethod}」食譜...`;
+
+      try {
+        const apiKey = (localStorage.getItem('SENIOR_MEAL_GEMINI_KEY') || '').trim();
+        let generatedRecipe = null;
+
+        if (apiKey) {
+          generatedRecipe = await callGeminiRecipeAPI(apiKey, targetIngredients, chosenMethod);
+        } else {
+          await new Promise(r => setTimeout(r, 650));
+          generatedRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod);
+        }
+
+        allRecipes = [generatedRecipe, ...allRecipes.filter(r => r.id !== generatedRecipe.id)];
+        renderRecipeList();
+        openRecipeDetail(generatedRecipe.id);
+      } catch (err) {
+        const fallbackRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod);
+        allRecipes = [fallbackRecipe, ...allRecipes];
+        renderRecipeList();
+        openRecipeDetail(fallbackRecipe.id);
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    }
+
+    async function callGeminiRecipeAPI(apiKey, ingredientsText, chosenMethod) {
+      const noFryInstruction = excludeDeepFried
+        ? '家人不吃油炸料理，嚴禁出現油炸步驟！'
+        : '';
+
+      const prompt = `
+你是一位精通台灣在地家常菜的台菜主廚。
+掌廚者是 60~70 歲的台灣媽媽/長輩（所以步驟文字必須極度精簡清晰），但這道菜是要煮給「全家大小（阿公阿嬤、上班族兒女、小孩）」一起吃的！
+目前選定的食材是：「${ingredientsText}」（現在是台灣 ${currentMonth} 月）。
+指定使用的料理方式（烹調法）為：「${chosenMethod}」。
+${noFryInstruction}
+
+請設計 1 道最道地、開胃下飯、老少咸宜的「台式家常菜」（3~4人份）。
+嚴格遵守：
+1. 食材清單只列客觀名稱與份量（3~4人份）。
+2. 料理步驟必須精簡為 3 到 4 個步驟，每一步不超過 35 個字，口吻溫暖直白，嚴禁複製網路食譜原文。
+3. 附上一句 familyTip（全家共食小撇步）。
+4. 請只回傳純 JSON 物件：
+{
+  "title": "菜名",
+  "emoji": "🍲",
+  "mealSlot": "下飯主菜",
+  "cookingMethod": "${chosenMethod}",
+  "cookTimeMins": 18,
+  "familyTags": ["#${chosenMethod}", "#全家搶食", "#白飯殺手"],
+  "familyTip": "👨‍👩‍👧‍👦 全家共食撇步：...",
+  "youtubeSearchQuery": "用來在YouTube搜尋這道菜教學的關鍵字",
+  "ingredients": [
+    {"name": "食材名", "amount": "份量描述"}
+  ],
+  "steps": [
+    "第一步精簡大字說明",
+    "第二步精簡大字說明",
+    "第三步精簡大字說明",
+    "第四步精簡大字說明"
+  ]
+}`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        }
+      );
+
+      if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const parsed = JSON.parse(rawText);
+
+      return {
+        id: 'ai-' + Date.now(),
+        title: parsed.title || `${chosenMethod}${ingredientsText}`,
+        emoji: parsed.emoji || '🍲',
+        mealSlot: parsed.mealSlot || '下飯主菜',
+        cookingMethod: parsed.cookingMethod || chosenMethod,
+        isDeepFried: chosenMethod === '金黃油炸',
+        cookTimeMins: Number(parsed.cookTimeMins) || 18,
+        seasonMonths: [currentMonth],
+        familyTags: Array.isArray(parsed.familyTags) ? parsed.familyTags : [`#${chosenMethod}`, '#全家愛吃', '#AI主廚配菜'],
+        familyTip: parsed.familyTip || '👨‍👩‍👧‍👦 全家共食撇步：起鍋前可先盛起一份原味給小孩與長輩，剩下的加點蔥蒜辣椒拌炒給年輕人下飯！',
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: parsed.youtubeSearchQuery || `${parsed.title} 台式家常菜 做法`,
+        youtubeStartSec: 30,
+        youtubeChannel: '✨ AI 智慧配菜 ＋ YouTube 官方影片搜尋輔助',
+        ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [{ name: ingredientsText, amount: '適量' }],
+        steps: Array.isArray(parsed.steps) ? parsed.steps.slice(0, 4) : [],
+        isAiGenerated: true
+      };
+    }
+
+    function buildSmartLocalTaiwanRecipe(ingredientsText, chosenMethod) {
+      const items = ingredientsText
+        .split(/[、,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const mainItem = items[0] || '高麗菜';
+      const subItem = items[1] || '五花肉';
+
+      const methodTemplates = {
+        '家常快炒': {
+          title: `台式爆香快炒${mainItem}佐${subItem}`,
+          emoji: '🥬',
+          slot: '下飯主菜',
+          time: 12,
+          tags: ['#熱炒店香氣', '#白飯殺手', '#12分鐘上菜'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：加半碗水蓋鍋悶 2 分鐘，既保有熱炒店香氣，又能讓食材軟嫩入味，大人小孩都愛吃！`,
+          steps: [
+            `將「${mainItem}」與「${subItem}」洗淨切成適口大小，蔥蒜拍碎備用。`,
+            `熱鍋放少許油爆香蒜頭與「${subItem}」，炒出濃濃台式家常香氣。`,
+            `放入「${mainItem}」與半碗熱水，蓋鍋悶煮 2 分鐘讓食材脆甜又好咬。`,
+            `淋上一小匙醬油與鹽巴大火翻炒均勻，即可澎湃上桌！`
+          ]
+        },
+        '紅燒／滷製': {
+          title: `古早味醬香紅燒${mainItem}滷${subItem}`,
+          emoji: '🥘',
+          slot: '下飯主菜',
+          time: 25,
+          tags: ['#國民白飯殺手', '#帶便當首選', '#鹹甜入味'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：紅燒醬汁拿來淋白飯超開胃，多煮一點隔天給兒女帶便當更入味！`,
+          steps: [
+            `將「${mainItem}」與「${subItem}」洗淨切成好入口塊狀。`,
+            `鍋中放少許油爆香蔥薑蒜，加入 2 大匙醬油與 1 小匙冰糖炒出焦糖醬香。`,
+            `放入「${mainItem}」與「${subItem}」，加 1.5 碗溫水蓋鍋中小火慢滷 15 分鐘。`,
+            `滷到食材完全吸收甘甜湯汁、軟嫩入味即可起鍋配飯！`
+          ]
+        },
+        '清蒸／電鍋': {
+          title: `電鍋甘樹子清蒸${mainItem}${subItem}`,
+          emoji: '♨️',
+          slot: '下飯主菜',
+          time: 18,
+          tags: ['#電鍋免顧火', '#零油煙原汁', '#老少咸宜'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：清蒸湯汁鮮甜不油膩，底層可以多鋪一盒嫩豆腐，小孩跟長輩最愛舀著吃！`,
+          steps: [
+            `把「${mainItem}」與「${subItem}」洗淨切好入口大小，整齊鋪在深盤中。`,
+            `淋上 2 大匙甘甜醬油膏（或破布子）、米酒與薑絲提味。`,
+            `放進大同電鍋，外鍋加 1 杯水，按下開關蒸約 15 分鐘。`,
+            `電鍋跳起後撒上青蔥花即可端出，零油煙、鮮甜多汁！`
+          ]
+        },
+        '燉煮／煲湯': {
+          title: `甘甜慢燉${mainItem}${subItem}元氣湯`,
+          emoji: '🍲',
+          slot: '暖心靚湯',
+          time: 30,
+          tags: ['#全家補元氣', '#湯頭清甜', '#入口即化'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：用電鍋燉湯完全不用顧火，湯頭自然甘甜，幫全家人暖胃補體力！`,
+          steps: [
+            `先把「${mainItem}」與「${subItem}」洗淨切塊；若有肉類先用熱水川燙沖淨。`,
+            `將所有食材與 3 片老薑放進湯鍋，加入清水蓋過食材。`,
+            `蓋上鍋蓋以小火慢燉 25 分鐘（或用電鍋外鍋 1.5 杯水）至食材軟透。`,
+            `起鍋前加一小匙鹽巴與少許米酒，全家一人一碗暖呼呼！`
+          ]
+        },
+        '香煎／乾煎': {
+          title: `黃金焦香乾煎${mainItem}佐${subItem}`,
+          emoji: '🍳',
+          slot: '下飯主菜',
+          time: 15,
+          tags: ['#外酥內嫩', '#少油慢煎', '#香氣逼人'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：不用油炸！只要中小火慢煎就能做出餐廳級的微焦脆皮，小孩跟年輕人超愛！`,
+          steps: [
+            `將「${mainItem}」與「${subItem}」表面水分用廚房紙巾擦乾（下鍋才不會噴油）。`,
+            `平底鍋放一小匙油熱鍋，把食材平鋪下鍋，先不要急著翻動。`,
+            `中小火慢煎 4 分鐘至底部金黃恰恰，再翻面並加少許水蓋鍋悶熟內部。`,
+            `起鍋撒上椒鹽與蔥花，外香內軟超下飯！`
+          ]
+        },
+        '烤箱／氣炸': {
+          title: `免顧火氣炸椒鹽炙烤${mainItem}${subItem}`,
+          emoji: '🔥',
+          slot: '下飯主菜',
+          time: 15,
+          tags: ['#氣炸少油健康', '#小孩秒殺款', '#免吸油煙'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：用氣炸鍋或烤箱取代傳統油炸，逼出多餘油脂，外酥內多汁！`,
+          steps: [
+            `把「${mainItem}」與「${subItem}」洗淨擦乾，切成適口大小。`,
+            `拌入少許醬油、蒜泥、白胡椒粉與幾滴油抓勻入味。`,
+            `平鋪放進氣炸鍋或小烤箱，設定 180 度烘烤 12～14 分鐘（中途翻動一次）。`,
+            `出爐後撒點椒鹽或擠上檸檬汁，香酥多汁全家搶著夾！`
+          ]
+        },
+        '川燙／涼拌': {
+          title: `開胃蒜泥麻醬川燙${mainItem}拌${subItem}`,
+          emoji: '🥗',
+          slot: '下飯主菜',
+          time: 10,
+          tags: ['#零油煙清爽', '#麵攤人氣切盤', '#10分鐘完成'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：滾水加幾滴油燙食材最翠綠軟嫩，想吃辣的家人可以在自己碗裡加點辣椒醬油！`,
+          steps: [
+            `把「${mainItem}」與「${subItem}」洗淨，切成好入口的大小。`,
+            `煮一鍋滾水加半小匙鹽，將食材放入滾水燙熟至軟嫩（約 2～3 分鐘）。`,
+            `撈起徹底瀝乾水分，整齊擺進大盤子裡。`,
+            `淋上蒜泥、醬油膏與少許香油拌勻，清爽開胃零油煙！`
+          ]
+        },
+        '金黃油炸': {
+          title: `台式懷舊金黃酥炸${mainItem}${subItem}`,
+          emoji: '🍤',
+          slot: '下飯主菜',
+          time: 20,
+          tags: ['#傳統酥炸香氣', '#孫子回家最愛', '#外酥內嫩'],
+          tip: `👨‍👩‍👧‍👦 全家共食撇步：用平底鍋「半煎炸」比傳統大油鍋省油又安全，炸好可留一部分煮成燴菜給長輩吃！`,
+          steps: [
+            `把「${mainItem}」與「${subItem}」切適口塊，用少許醬油、米酒與蒜泥抓醃 10 分鐘。`,
+            `表面均勻沾上薄薄一層地瓜粉，靜置 3 分鐘反潮不脫落。`,
+            `熱鍋倒入約 1 公分高的油，放入食材中火半煎炸至兩面金黃酥脆。`,
+            `撈起吸乾多餘油份，撒點椒鹽與九層塔即可上桌！`
+          ]
+        }
+      };
+
+      const tpl = methodTemplates[chosenMethod] || methodTemplates['家常快炒'];
+      const ingredientObjs = items.map((name, idx) => ({
+        name,
+        amount: idx === 0 ? '1 份（約 350 克，切適口大小）' : '適量（洗淨備用）'
+      }));
+      ingredientObjs.push({ name: '蔥、薑、蒜頭', amount: '少許（台式爆香提味）' });
+      ingredientObjs.push({ name: '醬油與鹽巴', amount: '適量' });
+
+      return {
+        id: 'ai-' + Date.now(),
+        title: tpl.title,
+        emoji: tpl.emoji,
+        mealSlot: tpl.slot,
+        cookingMethod: chosenMethod,
+        isDeepFried: chosenMethod === '金黃油炸',
+        cookTimeMins: tpl.time,
+        seasonMonths: [currentMonth],
+        familyTags: tpl.tags,
+        familyTip: tpl.tip,
+        youtubeVideoId: 'aqz-KE-bpKQ',
+        youtubeSearchQuery: `${chosenMethod} ${mainItem} ${subItem} 家常做法`,
+        youtubeStartSec: 30,
+        youtubeChannel: `✨ 依您選擇的「${chosenMethod}」與冰箱食材量身產生`,
+        ingredients: ingredientObjs,
+        steps: tpl.steps,
+        isAiGenerated: true
+      };
+    }
+
+    // =========================================================================
+    // 9. 食譜卡片列表渲染與多重智慧匹配（支援同義詞展開，點圖示必有結果）
+    // =========================================================================
+    function setMealFilter(filterName) {
+      activeMealFilter = filterName;
+      document.querySelectorAll('.meal-tab').forEach(btn => {
+        if (btn.dataset.filter === filterName) {
+          btn.className = 'meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-[#9A3412] bg-[#9A3412] text-white shadow';
+        } else {
+          btn.className = 'meal-tab py-3.5 px-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-400 bg-white text-stone-800';
+        }
+      });
+      renderRecipeList();
+    }
+
+    function pickRandomThreeMeals() {
+      allRecipes = [...allRecipes].sort(() => Math.random() - 0.5);
+      renderRecipeList();
+    }
+
+    function doesRecipeMatchTerm(recipe, term) {
+      const fullText = recipe.title + ' ' + recipe.ingredients.map(i => i.name).join(' ');
+      // 檢查是否為視覺化食材圖示（若有定義同義詞如 鮮魚 -> 鱸魚/鯖魚，一併比對）
+      const visualItem = VISUAL_INGREDIENTS.find(v => v.name === term);
+      if (visualItem && visualItem.matchKeywords) {
+        return visualItem.matchKeywords.some(kw => fullText.includes(kw));
+      }
+      return fullText.includes(term);
+    }
+
+    function renderRecipeList() {
+      const container = document.getElementById('recipeCardsContainer');
+      const heading = document.getElementById('recipeListHeading');
+      const summaryBanner = document.getElementById('selectedIngredientsBanner');
+      const summaryText = document.getElementById('selectedIngSummaryText');
+      const countText = document.getElementById('selectedIngCountText');
+
+      const query = document.getElementById('ingredientInput').value.trim();
+      const terms = query.split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
+
+      let filtered = allRecipes.filter(recipe => {
+        if (excludeDeepFried && recipe.isDeepFried) return false;
+        if (activeCookingMethod !== 'all' && recipe.cookingMethod !== activeCookingMethod) return false;
+        if (activeMealFilter !== 'all' && recipe.mealSlot !== activeMealFilter) return false;
+        if (terms.length > 0) {
+          return terms.some(term => doesRecipeMatchTerm(recipe, term));
+        }
+        return recipe.seasonMonths.includes(currentMonth) || recipe.isAiGenerated;
+      });
+
+      if (filtered.length === 0 && terms.length === 0) {
+        filtered = allRecipes.filter(recipe => {
+          if (excludeDeepFried && recipe.isDeepFried) return false;
+          if (activeCookingMethod !== 'all' && recipe.cookingMethod !== activeCookingMethod) return false;
+          if (activeMealFilter !== 'all' && recipe.mealSlot !== activeMealFilter) return false;
+          return true;
+        });
+      }
+
+      // 更新頂部已選食材橫幅提示
+      if (terms.length > 0) {
+        summaryBanner.classList.remove('hidden');
+        summaryText.textContent = `已點選食材：${terms.join(' ＋ ')}`;
+        countText.textContent = filtered.length > 0
+          ? `✅ 找到 ${filtered.length} 道相關菜單（往下滑或點右方按鈕直接看）`
+          : `💡 點上方「✨ 請 AI 用所選食材配新菜」可立即量身生成！`;
+      } else {
+        summaryBanner.classList.add('hidden');
+      }
+
+      const methodTitlePrefix = activeCookingMethod === 'all' ? '' : `【${activeCookingMethod}】`;
+      if (terms.length > 0) {
+        heading.textContent = `🔍 ${methodTitlePrefix}含有「${terms.join('、')}」的料理（共 ${filtered.length} 道）`;
+      } else {
+        heading.textContent = `👨‍👩‍👧‍👦 ${methodTitlePrefix}${currentMonth}月全家三餐菜單（共 ${filtered.length} 道）`;
+      }
+
+      if (filtered.length === 0) {
+        const chosenMethodLabel = activeCookingMethod === 'all' ? '家常快炒或紅燒' : activeCookingMethod;
+        container.innerHTML = `
+          <div class="bg-white border-4 border-stone-400 rounded-3xl p-8 text-center space-y-4">
+            <div class="text-6xl">🧑‍🍳</div>
+            <h3 class="text-3xl font-extrabold text-stone-900">
+              內建菜單沒有同時符合「${query}」與「${chosenMethodLabel}」的現成項目
+            </h3>
+            <p class="text-2xl text-stone-700 font-bold">
+              請點下方橘色大按鈕，讓 AI 主廚直接用「${query}」加上「${chosenMethodLabel}」為全家設計一道新食譜！
+            </p>
+            <button
+              onclick="generateAIRecipeFromIngredients()"
+              class="w-full py-5 px-6 rounded-2xl bg-amber-600 text-white font-extrabold text-2xl sm:text-3xl shadow-lg border-4 border-amber-900"
+            >
+              ✨ 立即請 AI 主廚生成這道菜
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(recipe => `
+        <article
+          onclick="openRecipeDetail('${recipe.id}')"
+          class="bg-white border-4 border-stone-800 rounded-3xl p-5 sm:p-6 shadow-md hover:border-[#9A3412] transition cursor-pointer active:scale-[0.99]"
+        >
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="bg-emerald-100 text-emerald-950 border-2 border-emerald-600 font-extrabold text-xl px-4 py-1 rounded-full">
+                🍳 ${recipe.cookingMethod}
+              </span>
+              <span class="bg-amber-100 text-[#9A3412] border-2 border-amber-400 font-extrabold text-xl px-4 py-1 rounded-full">
+                ${recipe.mealSlot}
+              </span>
+              <span class="bg-stone-100 text-stone-800 border-2 border-stone-400 font-extrabold text-xl px-4 py-1 rounded-full">
+                ⏱️ 約 ${recipe.cookTimeMins} 分鐘
+              </span>
+              ${recipe.isAiGenerated ? `<span class="bg-purple-100 text-purple-900 border-2 border-purple-400 font-extrabold text-xl px-3 py-1 rounded-full">✨ AI 專屬配菜</span>` : ''}
+            </div>
+            <span class="text-5xl shrink-0" aria-hidden="true">${recipe.emoji || '🍲'}</span>
+          </div>
+
+          <h3 class="text-3xl sm:text-4xl font-black text-stone-900 mb-3 leading-snug">
+            ${recipe.title}
+          </h3>
+
+          <!-- 全家餐桌標籤 -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            ${(recipe.familyTags || []).map(tag => `
+              <span class="bg-amber-50 text-[#7C2D12] border-2 border-amber-500 font-extrabold text-xl px-3.5 py-1 rounded-xl">
+                ${tag}
+              </span>
+            `).join('')}
+          </div>
+
+          <!-- 主要食材預覽 -->
+          <p class="text-2xl text-stone-700 font-bold mb-5 bg-cream p-3.5 rounded-2xl border-2 border-stone-300">
+            🧺 食材：${recipe.ingredients.map(i => i.name).join('、')}
+          </p>
+
+          <!-- 超大進入按鈕 -->
+          <div class="w-full py-4 px-5 rounded-2xl bg-[#9A3412] text-white font-extrabold text-2xl sm:text-3xl text-center shadow flex items-center justify-center gap-2">
+            <span>👉 點此看大字作法與影片</span>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // =========================================================================
+    // 10. 單道料理「黃金畫面配置」渲染與互動
+    // =========================================================================
+    function openRecipeDetail(recipeId) {
+      const recipe = allRecipes.find(r => r.id === recipeId);
+      if (!recipe) return;
+      currentRecipe = recipe;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      document.getElementById('detailMethodBadge').textContent = `🍳 ${recipe.cookingMethod}`;
+      document.getElementById('detailMealBadge').textContent = recipe.mealSlot;
+      document.getElementById('detailTimeBadge').textContent = `⏱️ 預估 ${recipe.cookTimeMins} 分鐘`;
+      document.getElementById('detailTitle').textContent = `${recipe.emoji || '🍲'} ${recipe.title}`;
+
+      document.getElementById('detailFamilyTags').innerHTML = (recipe.familyTags || []).map(tag => `
+        <span class="bg-amber-50 text-[#7C2D12] border-2 border-amber-600 font-extrabold text-2xl px-4 py-1.5 rounded-2xl">
+          ${tag}
+        </span>
+      `).join('');
+
+      const tipBox = document.getElementById('detailFamilyTipBox');
+      if (recipe.familyTip) {
+        tipBox.classList.remove('hidden');
+        tipBox.textContent = recipe.familyTip;
+      } else {
+        tipBox.classList.add('hidden');
+      }
+
+      const startSec = Number(recipe.youtubeStartSec) || 0;
+      document.getElementById('detailStartSecNote').textContent =
+        startSec > 0 ? `⚡ 已自動從第 ${startSec} 秒開始（跳過片頭閒聊）` : '▶️ 官方教學影片';
+
+      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(recipe.youtubeVideoId)}?start=${startSec}&rel=0&modestbranding=1&playsinline=1`;
+      document.getElementById('youtubeIframe').src = embedUrl;
+      document.getElementById('detailChannelCredit').textContent = `📺 影片來源：${recipe.youtubeChannel}`;
+
+      const searchOrWatchUrl = recipe.youtubeSearchQuery
+        ? `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.youtubeSearchQuery)}`
+        : `https://www.youtube.com/watch?v=${encodeURIComponent(recipe.youtubeVideoId)}&t=${startSec}s`;
+      document.getElementById('youtubeExternalBtn').href = searchOrWatchUrl;
+
+      const ingContainer = document.getElementById('detailIngredientsList');
+      ingContainer.innerHTML = recipe.ingredients.map((ing, idx) => `
+        <label
+          for="ing-check-${idx}"
+          class="flex items-center justify-between gap-4 p-4 sm:p-5 cursor-pointer hover:bg-amber-50/70 transition select-none"
+        >
+          <div class="flex items-center gap-4">
+            <input
+              id="ing-check-${idx}"
+              type="checkbox"
+              checked
+              data-name="${ing.name}"
+              data-amount="${ing.amount}"
+              onchange="updateIngredientRowStyle(this)"
+              class="senior-checkbox"
+            />
+            <span class="text-2xl sm:text-3xl font-extrabold text-stone-900 ing-label-text">
+              ${ing.name}
+            </span>
+          </div>
+          <span class="text-2xl font-bold text-[#9A3412] bg-amber-100 px-3.5 py-1 rounded-xl border border-amber-300 shrink-0">
+            ${ing.amount}
+          </span>
+        </label>
+      `).join('');
+
+      const stepsContainer = document.getElementById('detailStepsList');
+      stepsContainer.innerHTML = recipe.steps.map((stepText, idx) => `
+        <div class="bg-warmCard border-4 border-amber-800/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-sm">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#9A3412] text-white font-black text-3xl flex items-center justify-center shrink-0 shadow">
+            ${idx + 1}
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-stone-900 leading-relaxed">
+            ${stepText}
+          </p>
+        </div>
+      `).join('');
+
+      document.getElementById('homeView').classList.add('hidden');
+      document.getElementById('detailView').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateIngredientRowStyle(checkbox) {
+      const labelText = checkbox.parentElement.querySelector('.ing-label-text');
+      if (!checkbox.checked) {
+        labelText.classList.add('line-through', 'text-stone-400');
+      } else {
+        labelText.classList.remove('line-through', 'text-stone-400');
+      }
+    }
+
+    function showHomeView() {
+      document.getElementById('youtubeIframe').src = '';
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('detailView').classList.add('hidden');
+      document.getElementById('homeView').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 11. 一鍵傳送到 LINE 備忘
+    // =========================================================================
+    function shareIngredientsToLine() {
+      if (!currentRecipe) return;
+
+      const checkboxes = document.querySelectorAll('#detailIngredientsList input[type="checkbox"]');
+      const selectedItems = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selectedItems.push(`✅ ${cb.dataset.name}：${cb.dataset.amount}`);
+        }
+      });
+
+      const finalItems = selectedItems.length > 0
+        ? selectedItems
+        : currentRecipe.ingredients.map(i => `✅ ${i.name}：${i.amount}`);
+
+      const messageLines = [
+        `🍲【今日全家菜單：${currentRecipe.title}】`,
+        `🍳 料理方式：${currentRecipe.cookingMethod}（約 ${currentRecipe.cookTimeMins} 分鐘）`,
+        ``,
+        `🧺【買菜清單（3~4人份）】`,
+        ...finalItems,
+        ``,
+        `👩‍🍳【簡單步驟】`,
+        ...currentRecipe.steps.map((s, i) => `${i + 1}. ${s}`)
+      ];
+
+      const shareText = messageLines.join('\n');
+      const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`;
+      window.open(lineUrl, '_blank');
+    }
+
+    // =========================================================================
+    // 12. 煮菜時保持螢幕恆亮 (Screen Wake Lock API)
+    // =========================================================================
+    async function toggleWakeLock() {
+      const pill = document.getElementById('wakeLockPill');
+      const subtext = document.getElementById('wakeLockSubtext');
+      const icon = document.getElementById('wakeLockIcon');
+
+      if (wakeLockSentinel) {
+        await wakeLockSentinel.release();
+        wakeLockSentinel = null;
+        pill.textContent = '未開啟';
+        pill.className = 'px-5 py-3 rounded-2xl font-extrabold text-2xl border-4 border-stone-500 bg-white text-stone-800 shrink-0';
+        subtext.textContent = '點此開啟，手油油看食譜螢幕不會黑掉';
+        icon.textContent = '💡';
+        return;
+      }
+
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          wakeLockSentinel.addEventListener('release', () => {
+            wakeLockSentinel = null;
+          });
+        }
+        pill.textContent = '已開啟恆亮';
+        pill.className = 'px-5 py-3 rounded-2xl font-extrabold text-2xl border-4 border-green-900 bg-[#15803D] text-white shrink-0';
+        subtext.textContent = '🟢 螢幕保持恆亮中，安心煮菜不會黑屏！';
+        icon.textContent = '🔆';
+      } catch (err) {
+        pill.textContent = '已開啟提示';
+        pill.className = 'px-5 py-3 rounded-2xl font-extrabold text-2xl border-4 border-amber-800 bg-amber-500 text-stone-950 shrink-0';
+        subtext.textContent = '已盡力保持螢幕喚醒（若手機處於低耗電模式請先關閉低耗電）';
+      }
+    }
+
+    // =========================================================================
+    // 13. 語音朗讀步驟
+    // =========================================================================
+    function toggleSpeakSteps() {
+      if (!('speechSynthesis' in window) || !currentRecipe) return;
+
+      const btnText = document.getElementById('speakStepsBtnText');
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        btnText.textContent = '唸步驟給我聽';
+        return;
+      }
+
+      const fullSpeech = `${currentRecipe.title}，料理方式：${currentRecipe.cookingMethod}。總共 ${currentRecipe.steps.length} 個步驟。` +
+        currentRecipe.steps.map((s, idx) => `第 ${idx + 1} 步：${s}`).join('。');
+
+      const utterance = new SpeechSynthesisUtterance(fullSpeech);
+      utterance.lang = 'zh-TW';
+      utterance.rate = 0.88;
+
+      utterance.onend = () => {
+        btnText.textContent = '唸步驟給我聽';
+      };
+
+      btnText.textContent = '⏹️ 停止朗讀';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // =========================================================================
+    // 14. 彈窗與設定管理
+    // =========================================================================
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+    function saveApiKey() {
+      const key = document.getElementById('geminiApiKeyInput').value.trim();
+      localStorage.setItem('SENIOR_MEAL_GEMINI_KEY', key);
+      closeModal('aiModal');
+      alert(key ? '✅ 已儲存 Gemini API Key！現在語音搜菜可即時由 AI 設計全家都愛吃的家常菜！' : '✅ 已切換為內建台菜主廚智慧合成模式！');
+    }
+  </script>
+</body>
+</html>

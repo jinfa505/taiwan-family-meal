@@ -1,0 +1,7 @@
+# 忽略測試暫存媒體檔
+anim_frames/
+whistling_sticker*
+mask_notes.png
+note_*.png
+tail_region.png
+build_animation.py

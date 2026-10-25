@@ -1,0 +1,22 @@
+{
+  "name": "台灣長輩每日三餐料理推薦",
+  "short_name": "三餐煮什麼",
+  "description": "專為台灣長輩設計的當季三餐推薦與大字食譜輔助工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFDF7",
+  "theme_color": "#B45309",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23B45309%22/><text x=%2250%22 y=%2268%22 font-size=%2256%22 text-anchor=%22middle%22>🍲</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23B45309%22/><text x=%2250%22 y=%2268%22 font-size=%2256%22 text-anchor=%22middle%22>🍲</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
