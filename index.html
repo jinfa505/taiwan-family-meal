@@ -78,22 +78,27 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 54px;
-      height: 54px;
-      font-size: 30px;
+      width: 58px;
+      height: 58px;
+      font-size: 32px;
       background: #FFF8EC;
-      border: 2px solid #D6B48A;
-      border-radius: 14px;
+      border: 2.5px solid #D6B48A;
+      border-radius: 16px;
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
       touch-action: manipulation;
-      transition: transform 0.1s, background 0.15s;
+      transition: transform 0.12s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
       flex-shrink: 0;
+      position: relative;
     }
-    .ing-icon-btn:active {
-      transform: scale(0.88);
+    .ing-icon-btn:active,
+    .ing-icon-btn.tooltip-active {
+      transform: scale(1.08);
       background: #FFEDD5;
+      border-color: #9A3412;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.45);
     }
 
     /* 長按 / Hover 浮動名稱提示泡泡 */
@@ -104,15 +109,19 @@
       color: #FFFDF7;
       font-size: 22px;
       font-weight: 800;
-      padding: 10px 20px;
+      line-height: 1.35;
+      padding: 10px 18px;
       border-radius: 16px;
       pointer-events: none;
-      white-space: nowrap;
+      max-width: calc(100vw - 24px);
+      white-space: normal;
+      text-align: center;
       opacity: 0;
       transform: translateY(4px);
       transition: opacity 0.15s ease-out, transform 0.15s ease-out;
       box-shadow: 0 8px 24px rgba(0,0,0,0.45);
       border: 3px solid #F59E0B;
+      --arrow-left: 50%;
     }
     #ingTooltip.visible {
       opacity: 1;
@@ -122,10 +131,16 @@
       content: '';
       position: absolute;
       top: 100%;
-      left: 50%;
+      left: var(--arrow-left, 50%);
       transform: translateX(-50%);
       border: 9px solid transparent;
       border-top-color: #F59E0B;
+    }
+    #ingTooltip.below::after {
+      top: auto;
+      bottom: 100%;
+      border-top-color: transparent;
+      border-bottom-color: #F59E0B;
     }
   </style>
 </head>
@@ -519,20 +534,28 @@
         <p id="detailChannelCredit" class="text-xl text-stone-500 font-bold text-center"></p>
       </div>
 
-      <!-- 【黃金配置 3】買菜清單區：可點擊打勾的食材與份量清單 ＋ 綠色高對比大按鈕「🟢 一鍵傳送到 LINE 備忘」 -->
+      <!-- 【黃金配置 3】買菜清單區：可點擊打勾的食材圖示與份量清單 ＋ 綠色高對比大按鈕「🟢 一鍵傳送到 LINE 備忘」 -->
       <div class="bg-white border-4 border-stone-800 rounded-3xl p-6 shadow-md space-y-5">
-        <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h3 class="text-3xl font-extrabold text-stone-900 flex items-center gap-2">
               <span>🧺</span> 買菜清單（全家 3～4 人份）
             </h3>
             <p class="text-xl text-stone-600 font-bold mt-1">
-              點一下食材可以打勾記號，再傳到 LINE 給自己或家人代買
+              👆 手指長按圖示看食材名稱；左方框框可打勾傳到 LINE 備忘
             </p>
           </div>
+          <button
+            id="toggleIngNamesBtn"
+            type="button"
+            onclick="toggleDetailIngTextMode()"
+            class="text-lg font-extrabold px-3.5 py-2 rounded-xl border-2 border-amber-600 bg-amber-50 text-[#9A3412] active:scale-95 shadow-sm"
+          >
+            👁️ 顯示全部名稱
+          </button>
         </div>
 
-        <!-- 食材 Checkbox 大字列表 -->
+        <!-- 食材 Checkbox 圖示列表 -->
         <div id="detailIngredientsList" class="divide-y-2 divide-stone-200 border-2 border-stone-300 rounded-2xl overflow-hidden bg-cream"></div>
 
         <!-- 綠色高對比大按鈕：一鍵傳送到 LINE 備忘 -->
@@ -888,30 +911,73 @@
     // 1b. 食材圖示查詢 helper + 長按 / 點擊 Tooltip 初始化
     // =========================================================================
     const EXTRA_SEASONING_ICONS = [
-      { keywords: ['蔥', '青蔥', '大蔥', '蔥花', '蔥段'], icon: '🧅' },
-      { keywords: ['蒜', '蒜頭', '大蒜', '蒜末', '蒜泥', '蒜白'], icon: '🧄' },
+      { keywords: ['番茄醬', '豆瓣醬', '辣豆瓣', '甜辣醬', '甜麵醬', '味噌', '豆腐乳', '沙茶醬', '沙茶', '脆瓜', '蔭瓜', '破布子', '甘樹子', '蔭鳳梨', '罐頭'], icon: '🥫' },
+      { keywords: ['紅棗', '枸杞'], icon: '🍒' },
+      { keywords: ['蔥', '青蔥', '大蔥', '蔥花', '蔥段', '蒜苗'], icon: '🧅' },
+      { keywords: ['蒜', '蒜頭', '大蒜', '蒜末', '蒜泥', '蒜片', '蒜白'], icon: '🧄' },
       { keywords: ['薑', '老薑', '生薑', '嫩薑', '薑片', '薑絲', '薑末'], icon: '🫚' },
       { keywords: ['辣椒', '朝天椒', '紅辣椒', '青辣椒', '辣油', '花椒'], icon: '🌶️' },
       { keywords: ['九層塔', '香菜', '芫荽', '芹菜', '羅勒', '巴西里'], icon: '🌿' },
-      { keywords: ['鹽', '鹽巴', '砂糖', '白糖', '冰糖', '黑糖', '胡椒', '白胡椒', '黑胡椒', '五香粉', '白胡椒粉'], icon: '🧂' },
-      { keywords: ['醬油', '醬油膏', '油膏', '蠔油', '米酒', '料酒', '烏醋', '白醋', '香油', '麻油', '黑麻油', '食用油', '沙拉油', '橄欖油', '油'], icon: '🍶' },
-      { keywords: ['番茄醬', '豆瓣醬', '辣豆瓣', '甜辣醬', '甜麵醬', '味噌', '豆腐乳', '沙茶醬', '沙茶', '脆瓜', '蔭瓜', '罐頭'], icon: '🥫' },
+      { keywords: ['醬油', '醬油膏', '油膏', '蠔油', '米酒', '料酒', '味醂', '烏醋', '白醋', '香油', '麻油', '黑麻油', '食用油', '沙拉油', '橄欖油', '油'], icon: '🍶' },
+      { keywords: ['鹽', '鹽巴', '砂糖', '白糖', '冰糖', '黑糖', '胡椒', '白胡椒', '黑胡椒', '五香粉', '白胡椒粉', '椒鹽', '糖'], icon: '🧂' },
       { keywords: ['太白粉', '地瓜粉', '麵粉', '樹薯粉', '炸粉', '玉米粉', '粉'], icon: '🍚' },
-      { keywords: ['高湯', '水', '溫水', '大骨湯', '高湯塊'], icon: '🥣' },
+      { keywords: ['高湯', '溫開水', '開水', '溫水', '大骨湯', '高湯塊', '水'], icon: '🥣' },
       { keywords: ['檸檬', '檸檬汁', '金桔'], icon: '🍋' },
       { keywords: ['咖哩', '咖哩塊', '咖哩粉'], icon: '🍛' }
     ];
 
     function getIngredientIcon(ingName) {
       if (!ingName) return '🥄';
-      const vi = VISUAL_INGREDIENTS.find(v =>
-        v.matchKeywords.some(kw => ingName.includes(kw)) || ingName.includes(v.name)
-      );
-      if (vi) return vi.icon;
-      const extra = EXTRA_SEASONING_ICONS.find(item =>
-        item.keywords.some(kw => ingName.includes(kw))
-      );
-      return extra ? extra.icon : '🥄';
+      // 特例優先處理
+      if (ingName.includes('番茄醬')) return '🥫';
+      if (ingName.includes('紅蘿蔔')) return '🥕';
+
+      const primary = ingName.split(/[（(]/)[0];
+
+      // 1. 優先比對 36 種主食材（以括號前主名稱最先出現、關鍵字最長者優先）
+      let bestVi = null;
+      for (const v of VISUAL_INGREDIENTS) {
+        const allKws = [...v.matchKeywords, v.name];
+        for (const kw of allKws) {
+          let tier = -1;
+          let idx = primary.indexOf(kw);
+          if (idx !== -1) {
+            tier = 0;
+          } else {
+            idx = ingName.indexOf(kw);
+            if (idx !== -1) tier = 1;
+          }
+          if (tier !== -1) {
+            const score = tier * 10000 + idx * 100 - kw.length;
+            if (!bestVi || score < bestVi.score) {
+              bestVi = { score, icon: v.icon };
+            }
+          }
+        }
+      }
+      if (bestVi) return bestVi.icon;
+
+      // 2. 次要比對辛香料與調味料（同樣以最先出現、關鍵字最長者優先）
+      let bestEx = null;
+      for (const item of EXTRA_SEASONING_ICONS) {
+        for (const kw of item.keywords) {
+          let tier = -1;
+          let idx = primary.indexOf(kw);
+          if (idx !== -1) {
+            tier = 0;
+          } else {
+            idx = ingName.indexOf(kw);
+            if (idx !== -1) tier = 1;
+          }
+          if (tier !== -1) {
+            const score = tier * 10000 + idx * 100 - kw.length;
+            if (!bestEx || score < bestEx.score) {
+              bestEx = { score, icon: item.icon };
+            }
+          }
+        }
+      }
+      return bestEx ? bestEx.icon : '🥄';
     }
 
     function initIngIconTooltip() {
@@ -920,29 +986,55 @@
 
       let longPressTimer = null;
       let dismissTimer = null;
+      let activeBtn = null;
       let startX = 0;
       let startY = 0;
       let isLongPressed = false;
+      let lastTouchTime = 0;
 
-      function showTooltip(el, cx, cy, autoDismissMs = 0) {
+      function clearActiveBtn() {
+        if (activeBtn) {
+          activeBtn.classList.remove('tooltip-active');
+          activeBtn = null;
+        }
+      }
+
+      function showTooltip(el, autoDismissMs = 0) {
         clearTimeout(dismissTimer);
         const name = el.dataset.ingName;
         const amount = el.dataset.ingAmount;
         if (!name) return;
+
+        clearActiveBtn();
+        activeBtn = el;
+        el.classList.add('tooltip-active');
+
         const label = amount ? `🧺 ${name}（${amount}）` : `🧺 ${name}`;
         tooltip.textContent = label;
+        tooltip.classList.remove('below');
         tooltip.classList.add('visible');
 
         requestAnimationFrame(() => {
+          const r = el.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
           const tw = tooltip.offsetWidth;
           const th = tooltip.offsetHeight;
+
           let tx = cx - tw / 2;
-          let ty = cy - th - 16;
-          if (tx < 10) tx = 10;
-          if (tx + tw > window.innerWidth - 10) tx = window.innerWidth - tw - 10;
-          if (ty < 10) ty = cy + 24; // 上方空間不夠改放下方
-          tooltip.style.left = tx + 'px';
-          tooltip.style.top  = ty + 'px';
+          tx = Math.max(12, Math.min(tx, window.innerWidth - tw - 12));
+
+          let ty = r.top - th - 14;
+          if (ty < 12) {
+            ty = r.bottom + 14;
+            tooltip.classList.add('below');
+          } else {
+            tooltip.classList.remove('below');
+          }
+
+          const arrowX = Math.max(18, Math.min(cx - tx, tw - 18));
+          tooltip.style.setProperty('--arrow-left', `${arrowX}px`);
+          tooltip.style.left = `${tx}px`;
+          tooltip.style.top  = `${ty}px`;
         });
 
         if (autoDismissMs > 0) {
@@ -952,25 +1044,39 @@
 
       function hideTooltip() {
         tooltip.classList.remove('visible');
+        clearActiveBtn();
         clearTimeout(longPressTimer);
         longPressTimer = null;
       }
 
-      // 手機觸控支援：手指長按（300ms）立即震動＋顯示名稱；輕點一下也會顯示 2.5 秒
+      // 防止手機長按圖示跳出系統選單
+      document.addEventListener('contextmenu', e => {
+        if (e.target.closest('.ing-icon-btn')) {
+          e.preventDefault();
+        }
+      });
+
+      // 畫面捲動時自動收起提示泡泡
+      window.addEventListener('scroll', hideTooltip, { passive: true });
+
+      // 手機觸控支援：手指長按（280ms）立即震動＋持續顯示名稱；放開後保留 2.2 秒；輕點也顯示 2.5 秒
       document.addEventListener('touchstart', e => {
+        lastTouchTime = Date.now();
         const el = e.target.closest('.ing-icon-btn');
         if (!el) { hideTooltip(); return; }
         const t = e.touches[0];
         startX = t.clientX;
         startY = t.clientY;
         isLongPressed = false;
+        clearTimeout(longPressTimer);
         longPressTimer = setTimeout(() => {
           isLongPressed = true;
           if ('vibrate' in navigator) {
             try { navigator.vibrate(35); } catch (_) {}
           }
-          showTooltip(el, startX, startY, 3000);
-        }, 300);
+          // 手指按住期間持續顯示（autoDismissMs = 0），等 touchend 再啟動倒數消失
+          showTooltip(el, 0);
+        }, 280);
       }, { passive: true });
 
       document.addEventListener('touchmove', e => {
@@ -983,36 +1089,45 @@
       }, { passive: true });
 
       document.addEventListener('touchend', e => {
+        lastTouchTime = Date.now();
         const el = e.target.closest('.ing-icon-btn');
         clearTimeout(longPressTimer);
         longPressTimer = null;
-        if (el && !isLongPressed) {
-          // 輕點手指也顯示 2.5 秒
-          const r = el.getBoundingClientRect();
-          showTooltip(el, r.left + r.width / 2, r.top, 2500);
+        if (el) {
+          if (isLongPressed) {
+            // 長按放開後，保留顯示 2.2 秒讓長輩看清楚
+            clearTimeout(dismissTimer);
+            dismissTimer = setTimeout(hideTooltip, 2200);
+          } else {
+            // 輕點手指也顯示 2.5 秒
+            showTooltip(el, 2500);
+          }
         }
       }, { passive: true });
 
       document.addEventListener('touchcancel', hideTooltip, { passive: true });
 
-      // 電腦滑鼠 Hover 即顯示
+      // 電腦滑鼠 Hover 即顯示（忽略觸控後合成的假滑鼠事件）
       document.addEventListener('mouseover', e => {
+        if (Date.now() - lastTouchTime < 800) return;
         const el = e.target.closest('.ing-icon-btn');
         if (!el) return;
-        const r = el.getBoundingClientRect();
-        showTooltip(el, r.left + r.width / 2, r.top, 0);
+        showTooltip(el, 0);
       });
       document.addEventListener('mouseout', e => {
+        if (Date.now() - lastTouchTime < 800) return;
         if (e.target.closest('.ing-icon-btn')) hideTooltip();
       });
 
-      // 點擊事件阻止冒泡（防止點食材按鈕跳進整張食譜）
+      // 點擊事件阻止冒泡與預設行為（防止點食材按鈕跳進食譜或誤觸取消 Checkbox）
       document.addEventListener('click', e => {
         const el = e.target.closest('.ing-icon-btn');
         if (el) {
+          e.preventDefault();
           e.stopPropagation();
-          const r = el.getBoundingClientRect();
-          showTooltip(el, r.left + r.width / 2, r.top, 2500);
+          if (Date.now() - lastTouchTime >= 800) {
+            showTooltip(el, 2500);
+          }
         }
       }, true);
     }
@@ -1774,7 +1889,7 @@
 
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=4').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=5').then(reg => {
           reg.update();
         }).catch(() => {});
       }
@@ -2590,41 +2705,7 @@ ${noFryInstruction}
       document.getElementById('youtubeExternalBtn').href = searchUrl;
       document.getElementById('detailChannelCredit').textContent = `🔍 搜尋關鍵字：${recipe.youtubeSearchQuery || recipe.title}`;
 
-      const ingContainer = document.getElementById('detailIngredientsList');
-      ingContainer.innerHTML = recipe.ingredients.map((ing, idx) => `
-        <label
-          for="ing-check-${idx}"
-          class="flex items-center justify-between gap-4 p-4 sm:p-5 cursor-pointer hover:bg-amber-50/70 transition select-none"
-        >
-          <div class="flex items-center gap-3">
-            <input
-              id="ing-check-${idx}"
-              type="checkbox"
-              checked
-              data-name="${ing.name}"
-              data-amount="${ing.amount}"
-              onchange="updateIngredientRowStyle(this)"
-              class="senior-checkbox"
-            />
-            <button
-              type="button"
-              class="ing-icon-btn"
-              data-ing-name="${ing.name}"
-              data-ing-amount="${ing.amount || ''}"
-              title="${ing.name}"
-              aria-label="${ing.name}"
-            >
-              <span class="text-3xl leading-none pointer-events-none">${getIngredientIcon(ing.name)}</span>
-            </button>
-            <span class="text-2xl sm:text-3xl font-extrabold text-stone-900 ing-label-text">
-              ${ing.name}
-            </span>
-          </div>
-          <span class="text-2xl font-bold text-[#9A3412] bg-amber-100 px-3.5 py-1 rounded-xl border border-amber-300 shrink-0">
-            ${ing.amount}
-          </span>
-        </label>
-      `).join('');
+      renderDetailIngredientsList(recipe);
 
       const stepsContainer = document.getElementById('detailStepsList');
       stepsContainer.innerHTML = recipe.steps.map((stepText, idx) => `
@@ -2643,12 +2724,73 @@ ${noFryInstruction}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    let showDetailIngText = false;
+
+    function toggleDetailIngTextMode() {
+      showDetailIngText = !showDetailIngText;
+      const btn = document.getElementById('toggleIngNamesBtn');
+      if (btn) {
+        btn.textContent = showDetailIngText ? '🙈 改回只看圖示' : '👁️ 顯示全部名稱';
+      }
+      if (currentRecipe) {
+        renderDetailIngredientsList(currentRecipe);
+      }
+    }
+
+    function renderDetailIngredientsList(recipe) {
+      const ingContainer = document.getElementById('detailIngredientsList');
+      if (!ingContainer || !recipe) return;
+
+      ingContainer.innerHTML = recipe.ingredients.map((ing, idx) => `
+        <div
+          class="ing-row flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-amber-50/70 transition select-none"
+        >
+          <div class="flex items-center gap-3.5">
+            <label for="ing-check-${idx}" class="flex items-center cursor-pointer p-1">
+              <input
+                id="ing-check-${idx}"
+                type="checkbox"
+                checked
+                data-name="${ing.name}"
+                data-amount="${ing.amount}"
+                onchange="updateIngredientRowStyle(this)"
+                class="senior-checkbox"
+              />
+            </label>
+            <button
+              type="button"
+              class="ing-icon-btn"
+              data-ing-name="${ing.name}"
+              data-ing-amount="${ing.amount || ''}"
+              title="${ing.name} ${ing.amount || ''}"
+              aria-label="${ing.name}"
+            >
+              <span class="text-3xl leading-none pointer-events-none">${getIngredientIcon(ing.name)}</span>
+            </button>
+            <span class="${showDetailIngText ? 'text-2xl sm:text-3xl font-extrabold text-stone-900' : 'text-lg font-bold text-stone-500'} ing-label-text">
+              ${showDetailIngText ? ing.name : '👆 長按圖示看名稱'}
+            </span>
+          </div>
+          <span class="text-2xl font-bold text-[#9A3412] bg-amber-100 px-3.5 py-1 rounded-xl border border-amber-300 shrink-0 ing-amount-badge">
+            ${ing.amount}
+          </span>
+        </div>
+      `).join('');
+    }
+
     function updateIngredientRowStyle(checkbox) {
-      const labelText = checkbox.parentElement.querySelector('.ing-label-text');
+      const row = checkbox.closest('.ing-row');
+      if (!row) return;
+      const labelText = row.querySelector('.ing-label-text');
+      const amountBadge = row.querySelector('.ing-amount-badge');
       if (!checkbox.checked) {
-        labelText.classList.add('line-through', 'text-stone-400');
+        row.classList.add('opacity-50');
+        if (labelText) labelText.classList.add('line-through');
+        if (amountBadge) amountBadge.classList.add('line-through');
       } else {
-        labelText.classList.remove('line-through', 'text-stone-400');
+        row.classList.remove('opacity-50');
+        if (labelText) labelText.classList.remove('line-through');
+        if (amountBadge) amountBadge.classList.remove('line-through');
       }
     }
 

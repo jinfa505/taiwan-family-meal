@@ -1,5 +1,5 @@
 // Service Worker for 三餐煮什麼 PWA (離線快取支援)
-const CACHE_NAME = 'taiwan-meal-cache-v4';
+const CACHE_NAME = 'taiwan-meal-cache-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
