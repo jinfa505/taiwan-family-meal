@@ -136,7 +136,7 @@
         <button onclick="openModal('aiModal')" class="bg-amber-100 text-[#7C2D12] font-bold text-lg px-3 py-2 rounded-xl border-2 border-amber-300 shadow active:scale-95">
           ⚙️ AI 設定
         </button>
-        <button onclick="openModal('iosGuideModal')" class="bg-white text-[#9A3412] font-bold text-lg px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+        <button onclick="openGuideModal()" class="bg-white text-[#9A3412] font-bold text-lg px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
           📱 放桌面
         </button>
       </div>
@@ -525,34 +525,82 @@
   </main>
 
 
-  <!-- ================= 彈窗 1：iOS 加入主畫面教學 ================= -->
+  <!-- ================= 彈窗 1：加入手機桌面教學（Android & iPhone 雙支援） ================= -->
   <div id="iosGuideModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
     <div class="bg-white border-4 border-stone-900 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
-        <h3 class="text-3xl font-extrabold text-[#9A3412]">📱 如何放到 iPhone 桌面？</h3>
+        <h3 class="text-3xl font-extrabold text-[#9A3412]">📱 如何放到手機桌面？</h3>
         <button onclick="closeModal('iosGuideModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
       </div>
 
-      <p class="text-2xl text-stone-800 font-bold leading-relaxed">
-        不用去商店下載、也不用花錢！只要在 iPhone 的 <strong>Safari 瀏覽器</strong> 做這 3 個動作，桌面上就會出現「三餐煮什麼」App 圖示：
+      <p class="text-xl sm:text-2xl text-stone-700 font-bold leading-relaxed">
+        不用去商店下載、也不用花錢！設定一次，桌面上就會多出一個 <strong>🍲「三餐煮什麼」</strong> 圖示，以後點開就是滿版大字體！
       </p>
 
-      <ol class="space-y-4 text-2xl font-bold text-stone-900">
-        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
-          <span class="text-[#9A3412] font-black">第一步：</span><br/>
-          用 iPhone 的 <strong>Safari</strong> 打開這個網頁，點一下畫面正下方中間的 <strong>「分享」按鈕（方框往上箭頭 📤）</strong>。
-        </li>
-        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
-          <span class="text-[#9A3412] font-black">第二步：</span><br/>
-          選單往上滑，找到並點選 <strong>「加入主畫面 ➕」</strong>。
-        </li>
-        <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
-          <span class="text-[#9A3412] font-black">第三步：</span><br/>
-          點右上角的 <strong>「新增」</strong>，就完成了！以後從桌面點開就是全螢幕大字 App！
-        </li>
-      </ol>
+      <!-- 系統切換標籤頁 (Android / iPhone) -->
+      <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1.5 rounded-2xl border-2 border-stone-300">
+        <button id="guideTabAndroidBtn" type="button" onclick="switchGuideTab('android')" class="py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-[#9A3412] bg-[#9A3412] text-white shadow">
+          🤖 安卓 Android
+        </button>
+        <button id="guideTabIosBtn" type="button" onclick="switchGuideTab('ios')" class="py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-transparent bg-transparent text-stone-700 hover:bg-stone-200">
+          🍎 蘋果 iPhone
+        </button>
+      </div>
 
-      <button onclick="closeModal('iosGuideModal')" class="w-full py-4 bg-[#9A3412] text-white font-extrabold text-2xl rounded-2xl">
+      <!-- Android 教學內容區塊 -->
+      <div id="guideContentAndroid" class="space-y-4">
+        <!-- 若瀏覽器支援一鍵安裝提示，顯示綠色快捷按鈕 -->
+        <button id="androidOneClickInstallBtn" onclick="triggerAndroidInstall()" class="hidden w-full py-4 px-4 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-2xl rounded-2xl shadow-lg border-4 border-emerald-950 flex items-center justify-center gap-2 active:scale-95">
+          <span>📲</span> 點此一鍵安裝到安卓桌面
+        </button>
+
+        <p class="text-xl font-bold text-stone-800">
+          適用於：<strong>三星、OPPO、vivo、小米、ASUS、Google Pixel</strong> 等手機
+        </p>
+
+        <ol class="space-y-3 text-xl sm:text-2xl font-bold text-stone-900">
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第一步：</span><br/>
+            使用 <strong>Chrome 瀏覽器</strong> 打開這個網頁。
+          </li>
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第二步：</span><br/>
+            點右上角的選單按鈕 <strong>「三個直立點點 ⋮」</strong>。
+          </li>
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第三步：</span><br/>
+            選單往下滑，點選 <strong>「加到主畫面」</strong> 或 <strong>「安裝應用程式」</strong>。<br/>
+            <span class="text-lg text-stone-600 font-medium">（若跳出提示，直接點選「新增」或「允許」）</span>
+          </li>
+        </ol>
+        <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-300 text-base sm:text-lg font-bold text-emerald-900">
+          💡 <strong>小撇步</strong>：有些手機底端會自動彈出「安裝並建立捷徑」，直接點它也可以！
+        </div>
+      </div>
+
+      <!-- iPhone 教學內容區塊 -->
+      <div id="guideContentIos" class="space-y-4 hidden">
+        <p class="text-xl font-bold text-stone-800">
+          適用於：<strong>iPhone 或 iPad</strong>
+        </p>
+
+        <ol class="space-y-3 text-xl sm:text-2xl font-bold text-stone-900">
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第一步：</span><br/>
+            用 iPhone 的 <strong>Safari 瀏覽器</strong> 打開這個網頁。
+          </li>
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第二步：</span><br/>
+            點螢幕下方正中間的 <strong>「分享按鈕（方框往上箭頭 📤）」</strong>。
+          </li>
+          <li class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+            <span class="text-[#9A3412] font-black">第三步：</span><br/>
+            選單往上滑，找到並點選 <strong>「加入主畫面 ➕」</strong>，再點右上角 <strong>「新增」</strong>。
+          </li>
+        </ol>
+      </div>
+
+      <button onclick="closeModal('iosGuideModal')" class="w-full py-4 bg-[#9A3412] hover:bg-[#7c2d12] text-white font-extrabold text-2xl rounded-2xl shadow transition">
         我知道了，關閉視窗
       </button>
     </div>
@@ -2475,8 +2523,54 @@ ${noFryInstruction}
     }
 
     // =========================================================================
-    // 14. 彈窗與設定管理
+    // 14. 彈窗與設定管理 (支援 Android & iPhone 加入桌面雙引導)
     // =========================================================================
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btn = document.getElementById('androidOneClickInstallBtn');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    function triggerAndroidInstall() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(() => {
+          deferredInstallPrompt = null;
+          closeModal('iosGuideModal');
+        });
+      }
+    }
+
+    function openGuideModal() {
+      // 自動偵測長輩手機作業系統，預先選中該系統標籤
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      switchGuideTab(isAndroid ? 'android' : 'ios');
+      openModal('iosGuideModal');
+    }
+
+    function switchGuideTab(os) {
+      const btnAndroid = document.getElementById('guideTabAndroidBtn');
+      const btnIos = document.getElementById('guideTabIosBtn');
+      const contentAndroid = document.getElementById('guideContentAndroid');
+      const contentIos = document.getElementById('guideContentIos');
+
+      if (!btnAndroid || !btnIos || !contentAndroid || !contentIos) return;
+
+      if (os === 'android') {
+        btnAndroid.className = 'py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-[#9A3412] bg-[#9A3412] text-white shadow';
+        btnIos.className = 'py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-transparent bg-transparent text-stone-700 hover:bg-stone-200';
+        contentAndroid.classList.remove('hidden');
+        contentIos.classList.add('hidden');
+      } else {
+        btnIos.className = 'py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-[#9A3412] bg-[#9A3412] text-white shadow';
+        btnAndroid.className = 'py-3 px-2 rounded-xl text-xl sm:text-2xl font-black transition border-2 border-transparent bg-transparent text-stone-700 hover:bg-stone-200';
+        contentIos.classList.remove('hidden');
+        contentAndroid.classList.add('hidden');
+      }
+    }
+
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
