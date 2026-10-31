@@ -1,5 +1,5 @@
 // Service Worker for 三餐煮什麼 PWA (離線快取支援)
-const CACHE_NAME = 'taiwan-meal-cache-v3';
+const CACHE_NAME = 'taiwan-meal-cache-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -38,6 +38,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // HTML 導航頁面：採用 Network First 策略，保證每次發布更新立即生效，斷網時才讀取離線快取
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  // 其他靜態資源採用 Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -50,7 +67,6 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // 若網路斷線且存取頁面，回傳已快取的 index.html
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }

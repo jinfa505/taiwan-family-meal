@@ -72,9 +72,67 @@
     .shake {
       animation: pin-shake 0.4s ease-in-out;
     }
+
+    /* 食材圖示按鈕（食譜卡片預覽與詳細頁） */
+    .ing-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      height: 54px;
+      font-size: 30px;
+      background: #FFF8EC;
+      border: 2px solid #D6B48A;
+      border-radius: 14px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.1s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .ing-icon-btn:active {
+      transform: scale(0.88);
+      background: #FFEDD5;
+    }
+
+    /* 長按 / Hover 浮動名稱提示泡泡 */
+    #ingTooltip {
+      position: fixed;
+      z-index: 99999;
+      background: #1C1917;
+      color: #FFFDF7;
+      font-size: 22px;
+      font-weight: 800;
+      padding: 10px 20px;
+      border-radius: 16px;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      border: 3px solid #F59E0B;
+    }
+    #ingTooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #ingTooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 9px solid transparent;
+      border-top-color: #F59E0B;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-cream text-ink selection:bg-amber-200">
+
+  <!-- 長按食材圖示浮動提示 -->
+  <div id="ingTooltip"></div>
 
   <!-- ================= 家庭專屬密碼鎖定畫面 (預設遮罩，驗證 0854 後解鎖) ================= -->
   <div id="familyPinOverlay" class="fixed inset-0 z-[9999] bg-[#FFFDF7] flex flex-col items-center justify-center p-4 select-none overflow-y-auto">
@@ -396,6 +454,17 @@
 
         <!-- 👨‍👩‍👧‍👦 全家共食小撇步 -->
         <div id="detailFamilyTipBox" class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 text-xl font-bold text-[#7C2D12]"></div>
+
+        <!-- 🧺 本道食譜食材圖示（手指長按或點一下看名稱） -->
+        <div class="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 space-y-2">
+          <div class="flex items-center justify-between flex-wrap gap-2 text-stone-800 font-extrabold text-xl">
+            <span class="flex items-center gap-2 text-[#7C2D12]"><span>🧺</span> 本道食材圖示：</span>
+            <span class="text-base font-bold text-[#9A3412] bg-amber-200/90 px-3 py-1 rounded-xl">
+              👆 手指長按或點一下看名稱與份量
+            </span>
+          </div>
+          <div id="detailVisualIcons" class="flex flex-wrap gap-2.5 pt-1 items-center"></div>
+        </div>
       </div>
 
       <!-- 【黃金配置 5】貼心輔助開關：煮菜時保持螢幕恆亮 (Wake Lock) -->
@@ -422,44 +491,32 @@
         </button>
       </div>
 
-      <!-- 【黃金配置 2】影片教學區：YouTube 官方內嵌 (預設跳過片頭) ＋ 下方「去 YouTube 放大看」輔助大按鈕 -->
+      <!-- 【黃金配置 2】影片教學區：YouTube 搜尋按鈕 -->
       <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <h3 class="text-3xl font-extrabold text-stone-900 flex items-center gap-2">
             <span>📺</span> 影片教學
           </h3>
-          <span id="detailStartSecNote" class="text-xl font-bold text-[#9A3412] bg-amber-100 px-3 py-1 rounded-xl border border-amber-300">
-            已自動跳過片頭閒聊
-          </span>
         </div>
 
-        <!-- 16:9 最大化內嵌播放器容器 -->
-        <div id="youtubeEmbedWrapper" class="w-full aspect-video bg-stone-900 rounded-2xl overflow-hidden border-4 border-stone-700 shadow-inner">
-          <iframe
-            id="youtubeIframe"
-            class="w-full h-full"
-            src=""
-            title="YouTube 料理教學影片"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-          ></iframe>
-        </div>
+        <!-- 搜尋提示文字 -->
+        <p class="text-2xl text-stone-700 font-bold bg-amber-50 border-2 border-amber-300 rounded-2xl px-4 py-3 leading-relaxed">
+          🔍 點下方按鈕，YouTube 會自動搜尋這道菜的教學影片
+        </p>
 
-        <p id="detailChannelCredit" class="text-xl text-stone-600 font-bold"></p>
-
-        <!-- 輔助大按鈕（外部跳轉 Deep Link 喚起原生 YouTube App） -->
+        <!-- 主要大按鈕：前往 YouTube 搜尋 -->
         <a
           id="youtubeExternalBtn"
           href="#"
           target="_blank"
           rel="noopener noreferrer"
-          class="w-full py-5 px-6 rounded-2xl bg-[#CC0000] hover:bg-[#990000] active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-red-950 text-center"
+          class="w-full py-6 px-6 rounded-2xl bg-[#CC0000] hover:bg-[#990000] active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-red-950 text-center"
         >
-          <span class="text-3xl">🔍</span>
-          <span>看不清楚？點此去 YouTube 放大觀看</span>
+          <span class="text-4xl">▶️</span>
+          <span>開啟 YouTube 搜尋教學影片</span>
         </a>
+
+        <p id="detailChannelCredit" class="text-xl text-stone-500 font-bold text-center"></p>
       </div>
 
       <!-- 【黃金配置 3】買菜清單區：可點擊打勾的食材與份量清單 ＋ 綠色高對比大按鈕「🟢 一鍵傳送到 LINE 備忘」 -->
@@ -826,6 +883,139 @@
       leafy_melon: '🥬 台灣四季葉菜、高麗菜、番茄與瓜果攤位',
       root_mushroom: '🍄 根莖類（蘿蔔、馬鈴薯、洋蔥、玉米）與鮮菇竹筍攤位'
     };
+
+    // =========================================================================
+    // 1b. 食材圖示查詢 helper + 長按 / 點擊 Tooltip 初始化
+    // =========================================================================
+    const EXTRA_SEASONING_ICONS = [
+      { keywords: ['蔥', '青蔥', '大蔥', '蔥花', '蔥段'], icon: '🧅' },
+      { keywords: ['蒜', '蒜頭', '大蒜', '蒜末', '蒜泥', '蒜白'], icon: '🧄' },
+      { keywords: ['薑', '老薑', '生薑', '嫩薑', '薑片', '薑絲', '薑末'], icon: '🫚' },
+      { keywords: ['辣椒', '朝天椒', '紅辣椒', '青辣椒', '辣油', '花椒'], icon: '🌶️' },
+      { keywords: ['九層塔', '香菜', '芫荽', '芹菜', '羅勒', '巴西里'], icon: '🌿' },
+      { keywords: ['鹽', '鹽巴', '砂糖', '白糖', '冰糖', '黑糖', '胡椒', '白胡椒', '黑胡椒', '五香粉', '白胡椒粉'], icon: '🧂' },
+      { keywords: ['醬油', '醬油膏', '油膏', '蠔油', '米酒', '料酒', '烏醋', '白醋', '香油', '麻油', '黑麻油', '食用油', '沙拉油', '橄欖油', '油'], icon: '🍶' },
+      { keywords: ['番茄醬', '豆瓣醬', '辣豆瓣', '甜辣醬', '甜麵醬', '味噌', '豆腐乳', '沙茶醬', '沙茶', '脆瓜', '蔭瓜', '罐頭'], icon: '🥫' },
+      { keywords: ['太白粉', '地瓜粉', '麵粉', '樹薯粉', '炸粉', '玉米粉', '粉'], icon: '🍚' },
+      { keywords: ['高湯', '水', '溫水', '大骨湯', '高湯塊'], icon: '🥣' },
+      { keywords: ['檸檬', '檸檬汁', '金桔'], icon: '🍋' },
+      { keywords: ['咖哩', '咖哩塊', '咖哩粉'], icon: '🍛' }
+    ];
+
+    function getIngredientIcon(ingName) {
+      if (!ingName) return '🥄';
+      const vi = VISUAL_INGREDIENTS.find(v =>
+        v.matchKeywords.some(kw => ingName.includes(kw)) || ingName.includes(v.name)
+      );
+      if (vi) return vi.icon;
+      const extra = EXTRA_SEASONING_ICONS.find(item =>
+        item.keywords.some(kw => ingName.includes(kw))
+      );
+      return extra ? extra.icon : '🥄';
+    }
+
+    function initIngIconTooltip() {
+      const tooltip = document.getElementById('ingTooltip');
+      if (!tooltip) return;
+
+      let longPressTimer = null;
+      let dismissTimer = null;
+      let startX = 0;
+      let startY = 0;
+      let isLongPressed = false;
+
+      function showTooltip(el, cx, cy, autoDismissMs = 0) {
+        clearTimeout(dismissTimer);
+        const name = el.dataset.ingName;
+        const amount = el.dataset.ingAmount;
+        if (!name) return;
+        const label = amount ? `🧺 ${name}（${amount}）` : `🧺 ${name}`;
+        tooltip.textContent = label;
+        tooltip.classList.add('visible');
+
+        requestAnimationFrame(() => {
+          const tw = tooltip.offsetWidth;
+          const th = tooltip.offsetHeight;
+          let tx = cx - tw / 2;
+          let ty = cy - th - 16;
+          if (tx < 10) tx = 10;
+          if (tx + tw > window.innerWidth - 10) tx = window.innerWidth - tw - 10;
+          if (ty < 10) ty = cy + 24; // 上方空間不夠改放下方
+          tooltip.style.left = tx + 'px';
+          tooltip.style.top  = ty + 'px';
+        });
+
+        if (autoDismissMs > 0) {
+          dismissTimer = setTimeout(hideTooltip, autoDismissMs);
+        }
+      }
+
+      function hideTooltip() {
+        tooltip.classList.remove('visible');
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+
+      // 手機觸控支援：手指長按（300ms）立即震動＋顯示名稱；輕點一下也會顯示 2.5 秒
+      document.addEventListener('touchstart', e => {
+        const el = e.target.closest('.ing-icon-btn');
+        if (!el) { hideTooltip(); return; }
+        const t = e.touches[0];
+        startX = t.clientX;
+        startY = t.clientY;
+        isLongPressed = false;
+        longPressTimer = setTimeout(() => {
+          isLongPressed = true;
+          if ('vibrate' in navigator) {
+            try { navigator.vibrate(35); } catch (_) {}
+          }
+          showTooltip(el, startX, startY, 3000);
+        }, 300);
+      }, { passive: true });
+
+      document.addEventListener('touchmove', e => {
+        if (!longPressTimer) return;
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - startX, t.clientY - startY) > 12) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', e => {
+        const el = e.target.closest('.ing-icon-btn');
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+        if (el && !isLongPressed) {
+          // 輕點手指也顯示 2.5 秒
+          const r = el.getBoundingClientRect();
+          showTooltip(el, r.left + r.width / 2, r.top, 2500);
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchcancel', hideTooltip, { passive: true });
+
+      // 電腦滑鼠 Hover 即顯示
+      document.addEventListener('mouseover', e => {
+        const el = e.target.closest('.ing-icon-btn');
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        showTooltip(el, r.left + r.width / 2, r.top, 0);
+      });
+      document.addEventListener('mouseout', e => {
+        if (e.target.closest('.ing-icon-btn')) hideTooltip();
+      });
+
+      // 點擊事件阻止冒泡（防止點食材按鈕跳進整張食譜）
+      document.addEventListener('click', e => {
+        const el = e.target.closest('.ing-icon-btn');
+        if (el) {
+          e.stopPropagation();
+          const r = el.getBoundingClientRect();
+          showTooltip(el, r.left + r.width / 2, r.top, 2500);
+        }
+      }, true);
+    }
 
     // =========================================================================
     // 2. 台灣家庭廚房 8 大料理方式（烹調法）定義
@@ -1579,9 +1769,14 @@
       renderCookingMethodTabs();
       renderRecipeList();
 
+      // 初始化食材圖示長按 Tooltip
+      initIngIconTooltip();
+
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js?v=4').then(reg => {
+          reg.update();
+        }).catch(() => {});
       }
     });
 
@@ -2305,10 +2500,32 @@ ${noFryInstruction}
             `).join('')}
           </div>
 
-          <!-- 主要食材預覽 -->
-          <p class="text-2xl text-stone-700 font-bold mb-5 bg-cream p-3.5 rounded-2xl border-2 border-stone-300">
-            🧺 食材：${recipe.ingredients.map(i => i.name).join('、')}
-          </p>
+          <!-- 主要食材預覽：圖示格（長按看名稱） -->
+          <div class="mb-5 bg-cream p-3.5 sm:p-4 rounded-2xl border-2 border-stone-300 space-y-2">
+            <div class="flex items-center justify-between flex-wrap gap-2 text-stone-700 font-extrabold text-lg sm:text-xl">
+              <span class="flex items-center gap-1.5 text-stone-800">
+                <span>🧺</span> 食材圖示：
+              </span>
+              <span class="text-sm sm:text-base font-bold text-[#9A3412] bg-amber-100 px-2.5 py-0.5 rounded-lg border border-amber-300">
+                👆 長按圖示看名稱
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-2.5 items-center pt-1">
+              ${recipe.ingredients.map(i => `
+                <button
+                  class="ing-icon-btn"
+                  data-ing-name="${i.name}"
+                  data-ing-amount="${i.amount || ''}"
+                  title="${i.name} ${i.amount || ''}"
+                  aria-label="${i.name}"
+                  type="button"
+                  onclick="event.stopPropagation()"
+                >
+                  <span class="text-3xl leading-none pointer-events-none">${getIngredientIcon(i.name)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
 
           <!-- 超大進入按鈕 -->
           <div class="w-full py-4 px-5 rounded-2xl bg-[#9A3412] text-white font-extrabold text-2xl sm:text-3xl text-center shadow flex items-center justify-center gap-2">
@@ -2349,18 +2566,29 @@ ${noFryInstruction}
         tipBox.classList.add('hidden');
       }
 
-      const startSec = Number(recipe.youtubeStartSec) || 0;
-      document.getElementById('detailStartSecNote').textContent =
-        startSec > 0 ? `⚡ 已自動從第 ${startSec} 秒開始（跳過片頭閒聊）` : '▶️ 官方教學影片';
+      // 渲染本道菜食材圖示列（長按/點擊看名稱）
+      const detailIconsEl = document.getElementById('detailVisualIcons');
+      if (detailIconsEl) {
+        detailIconsEl.innerHTML = recipe.ingredients.map(ing => `
+          <button
+            type="button"
+            class="ing-icon-btn"
+            data-ing-name="${ing.name}"
+            data-ing-amount="${ing.amount || ''}"
+            title="${ing.name} ${ing.amount || ''}"
+            aria-label="${ing.name}"
+          >
+            <span class="text-3xl leading-none pointer-events-none">${getIngredientIcon(ing.name)}</span>
+          </button>
+        `).join('');
+      }
 
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(recipe.youtubeVideoId)}?start=${startSec}&rel=0&modestbranding=1&playsinline=1`;
-      document.getElementById('youtubeIframe').src = embedUrl;
-      document.getElementById('detailChannelCredit').textContent = `📺 影片來源：${recipe.youtubeChannel}`;
-
-      const searchOrWatchUrl = recipe.youtubeSearchQuery
+      // 影片教學：改用 YouTube 搜尋連結，避免錯誤的 Video ID
+      const searchUrl = recipe.youtubeSearchQuery
         ? `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.youtubeSearchQuery)}`
-        : `https://www.youtube.com/watch?v=${encodeURIComponent(recipe.youtubeVideoId)}&t=${startSec}s`;
-      document.getElementById('youtubeExternalBtn').href = searchOrWatchUrl;
+        : `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' 台式家常料理做法')}`;
+      document.getElementById('youtubeExternalBtn').href = searchUrl;
+      document.getElementById('detailChannelCredit').textContent = `🔍 搜尋關鍵字：${recipe.youtubeSearchQuery || recipe.title}`;
 
       const ingContainer = document.getElementById('detailIngredientsList');
       ingContainer.innerHTML = recipe.ingredients.map((ing, idx) => `
@@ -2368,7 +2596,7 @@ ${noFryInstruction}
           for="ing-check-${idx}"
           class="flex items-center justify-between gap-4 p-4 sm:p-5 cursor-pointer hover:bg-amber-50/70 transition select-none"
         >
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <input
               id="ing-check-${idx}"
               type="checkbox"
@@ -2378,6 +2606,16 @@ ${noFryInstruction}
               onchange="updateIngredientRowStyle(this)"
               class="senior-checkbox"
             />
+            <button
+              type="button"
+              class="ing-icon-btn"
+              data-ing-name="${ing.name}"
+              data-ing-amount="${ing.amount || ''}"
+              title="${ing.name}"
+              aria-label="${ing.name}"
+            >
+              <span class="text-3xl leading-none pointer-events-none">${getIngredientIcon(ing.name)}</span>
+            </button>
             <span class="text-2xl sm:text-3xl font-extrabold text-stone-900 ing-label-text">
               ${ing.name}
             </span>
@@ -2415,7 +2653,6 @@ ${noFryInstruction}
     }
 
     function showHomeView() {
-      document.getElementById('youtubeIframe').src = '';
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
