@@ -3,9 +3,10 @@
   "short_name": "三餐煮什麼",
   "description": "專為台灣長輩設計的當季三餐推薦與大字食譜輔助工具",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#FFFDF7",
-  "theme_color": "#B45309",
+  "theme_color": "#9A3412",
   "orientation": "portrait",
   "icons": [
     {

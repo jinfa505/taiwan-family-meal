@@ -63,9 +63,63 @@
     .listening-pulse {
       animation: pulse-ring 1.5s infinite;
     }
+    /* 密碼錯誤震動動畫 */
+    @keyframes pin-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+    .shake {
+      animation: pin-shake 0.4s ease-in-out;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-cream text-ink selection:bg-amber-200">
+
+  <!-- ================= 家庭專屬密碼鎖定畫面 (預設遮罩，驗證 0854 後解鎖) ================= -->
+  <div id="familyPinOverlay" class="fixed inset-0 z-[9999] bg-[#FFFDF7] flex flex-col items-center justify-center p-4 select-none overflow-y-auto">
+    <div class="max-w-md w-full bg-white border-4 border-[#9A3412] rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 my-auto">
+      <div class="text-6xl">🍲🔒</div>
+      <div>
+        <h2 class="text-3xl sm:text-4xl font-black text-[#9A3412]">三餐煮什麼</h2>
+        <p class="text-xl font-bold text-stone-700 mt-1">家庭私密專區</p>
+        <p class="text-lg text-stone-500 font-medium mt-1">請輸入 4 位數家庭密碼</p>
+      </div>
+
+      <!-- PIN 碼顯示小圓點 -->
+      <div id="pinDotsWrapper" class="flex justify-center items-center gap-4 py-2">
+        <div id="pinDot0" class="w-6 h-6 rounded-full border-4 border-stone-400 bg-stone-100 transition-all"></div>
+        <div id="pinDot1" class="w-6 h-6 rounded-full border-4 border-stone-400 bg-stone-100 transition-all"></div>
+        <div id="pinDot2" class="w-6 h-6 rounded-full border-4 border-stone-400 bg-stone-100 transition-all"></div>
+        <div id="pinDot3" class="w-6 h-6 rounded-full border-4 border-stone-400 bg-stone-100 transition-all"></div>
+      </div>
+
+      <!-- 錯誤提示訊息 -->
+      <div id="pinErrorMsg" class="min-h-[28px] text-red-600 font-black text-xl"></div>
+
+      <!-- 記住此裝置 Checkbox -->
+      <label class="inline-flex items-center gap-3 cursor-pointer select-none bg-amber-50 px-4 py-2 rounded-xl border-2 border-amber-300">
+        <input id="pinRememberCheckbox" type="checkbox" checked class="senior-checkbox" />
+        <span class="text-lg font-bold text-stone-800">記住這支手機（下次免輸入）</span>
+      </label>
+
+      <!-- 數字鍵盤 (針對長輩設計的超大按鈕) -->
+      <div class="grid grid-cols-3 gap-3 pt-2">
+        <button type="button" onclick="handlePinKey('1')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">1</button>
+        <button type="button" onclick="handlePinKey('2')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">2</button>
+        <button type="button" onclick="handlePinKey('3')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">3</button>
+        <button type="button" onclick="handlePinKey('4')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">4</button>
+        <button type="button" onclick="handlePinKey('5')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">5</button>
+        <button type="button" onclick="handlePinKey('6')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">6</button>
+        <button type="button" onclick="handlePinKey('7')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">7</button>
+        <button type="button" onclick="handlePinKey('8')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">8</button>
+        <button type="button" onclick="handlePinKey('9')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">9</button>
+        <button type="button" onclick="handlePinClear()" class="py-4 text-xl font-black rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 active:scale-95 text-[#7C2D12] shadow-sm">清除</button>
+        <button type="button" onclick="handlePinKey('0')" class="py-4 text-3xl font-black rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 active:scale-95 text-stone-900 shadow-sm">0</button>
+        <button type="button" onclick="handlePinBackspace()" class="py-4 text-2xl font-black rounded-2xl bg-stone-200 hover:bg-stone-300 border-2 border-stone-400 active:scale-95 text-stone-800 shadow-sm">⌫</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= 頂部導覽列 (固定置頂，字大清晰) ================= -->
   <header class="sticky top-0 z-40 bg-[#9A3412] text-white shadow-md px-4 py-3">
@@ -540,12 +594,129 @@
           關閉
         </button>
       </div>
+
+      <!-- 家庭密碼鎖管理 -->
+      <div class="pt-4 border-t-2 border-stone-200 space-y-2">
+        <div class="text-lg font-bold text-stone-600">
+          🔒 家庭專屬密碼：<span class="font-mono text-[#9A3412] font-black text-xl">0854</span>
+        </div>
+        <button onclick="lockFamilyPin()" class="w-full py-3.5 bg-stone-800 hover:bg-stone-900 text-white font-extrabold text-xl rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition">
+          <span>🔒</span> 重新上鎖此裝置（需再輸入 0854）
+        </button>
+      </div>
     </div>
   </div>
 
 
   <!-- ================= 核心資料與互動邏輯腳本 ================= -->
   <script>
+    // =========================================================================
+    // 0. 家庭私密通關密碼系統 (0854)
+    // =========================================================================
+    const CORRECT_FAMILY_PIN = '0854';
+    const PIN_STORAGE_KEY = 'FAMILY_PIN_AUTH_TOKEN_V1';
+    let enteredPin = '';
+
+    function checkFamilyPinAuth() {
+      const isAuth = localStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN;
+      const overlay = document.getElementById('familyPinOverlay');
+      if (overlay) {
+        if (isAuth) {
+          overlay.classList.add('hidden');
+        } else {
+          overlay.classList.remove('hidden');
+          updatePinDots();
+        }
+      }
+    }
+
+    function updatePinDots() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById('pinDot' + i);
+        if (!dot) continue;
+        if (i < enteredPin.length) {
+          dot.className = 'w-6 h-6 rounded-full border-4 border-[#9A3412] bg-[#9A3412] scale-110 transition-all';
+        } else {
+          dot.className = 'w-6 h-6 rounded-full border-4 border-stone-400 bg-stone-100 transition-all';
+        }
+      }
+    }
+
+    function handlePinKey(num) {
+      if (enteredPin.length >= 4) return;
+      enteredPin += num;
+      updatePinDots();
+      document.getElementById('pinErrorMsg').textContent = '';
+
+      if (enteredPin.length === 4) {
+        verifyPin();
+      }
+    }
+
+    function handlePinBackspace() {
+      if (enteredPin.length > 0) {
+        enteredPin = enteredPin.slice(0, -1);
+        updatePinDots();
+        document.getElementById('pinErrorMsg').textContent = '';
+      }
+    }
+
+    function handlePinClear() {
+      enteredPin = '';
+      updatePinDots();
+      document.getElementById('pinErrorMsg').textContent = '';
+    }
+
+    function verifyPin() {
+      if (enteredPin === CORRECT_FAMILY_PIN) {
+        const remember = document.getElementById('pinRememberCheckbox').checked;
+        if (remember) {
+          localStorage.setItem(PIN_STORAGE_KEY, 'VERIFIED_' + CORRECT_FAMILY_PIN);
+        } else {
+          sessionStorage.setItem(PIN_STORAGE_KEY, 'VERIFIED_' + CORRECT_FAMILY_PIN);
+        }
+        const overlay = document.getElementById('familyPinOverlay');
+        overlay.classList.add('transition-opacity', 'duration-300', 'opacity-0');
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('transition-opacity', 'duration-300', 'opacity-0');
+        }, 300);
+      } else {
+        const dotsWrapper = document.getElementById('pinDotsWrapper');
+        dotsWrapper.classList.add('shake');
+        document.getElementById('pinErrorMsg').textContent = '❌ 密碼不對喔，請重新輸入';
+        setTimeout(() => {
+          dotsWrapper.classList.remove('shake');
+          enteredPin = '';
+          updatePinDots();
+        }, 600);
+      }
+    }
+
+    function lockFamilyPin() {
+      localStorage.removeItem(PIN_STORAGE_KEY);
+      sessionStorage.removeItem(PIN_STORAGE_KEY);
+      closeModal('aiModal');
+      enteredPin = '';
+      checkFamilyPinAuth();
+    }
+
+    // 支援實體鍵盤 (桌機或外接鍵盤測試)
+    window.addEventListener('keydown', (e) => {
+      const overlay = document.getElementById('familyPinOverlay');
+      if (!overlay || overlay.classList.contains('hidden')) return;
+      if (e.key >= '0' && e.key <= '9') {
+        handlePinKey(e.key);
+      } else if (e.key === 'Backspace') {
+        handlePinBackspace();
+      } else if (e.key === 'Escape') {
+        handlePinClear();
+      }
+    });
+
+    // 立即在腳本載入時執行一次密碼檢查
+    checkFamilyPinAuth();
+
     // =========================================================================
     // 1. 視覺化冰箱常備與時令食材圖示字典 (36 種台灣市場常見食材，分為 5 大攤位 + ⭐常用最愛)
     // =========================================================================
@@ -1349,6 +1520,7 @@
 
     // 初始化
     window.addEventListener('DOMContentLoaded', () => {
+      checkFamilyPinAuth();
       const monthSelect = document.getElementById('monthSelector');
       monthSelect.value = String(currentMonth);
 
