@@ -196,7 +196,7 @@
 
   <!-- ================= 頂部導覽列 (固定置頂，字大清晰) ================= -->
   <header class="sticky top-0 z-40 bg-[#9A3412] text-white shadow-md px-4 py-3">
-    <div class="max-w-2xl mx-auto flex items-center justify-between gap-2">
+    <div class="max-w-2xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <button onclick="showHomeView()" class="flex items-center gap-2 text-left focus:outline-none">
         <span class="text-4xl" aria-hidden="true">🍲</span>
         <div>
@@ -206,13 +206,19 @@
       </button>
 
       <div class="flex items-center gap-2">
-        <button onclick="openModal('aiModal')" class="bg-amber-100 text-[#7C2D12] font-bold text-lg px-3 py-2 rounded-xl border-2 border-amber-300 shadow active:scale-95">
-          ⚙️ AI 設定
+        <button onclick="openOnboarding(true)" aria-label="我的喜好設定" class="hidden sm:block bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+          🍽️ <span class="hidden sm:inline">我的喜好</span>
         </button>
-        <button onclick="openGuideModal()" class="bg-white text-[#9A3412] font-bold text-lg px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
-          📱 放桌面
+        <button onclick="openModal('aiModal')" aria-label="AI 設定" class="bg-amber-100 text-[#7C2D12] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-amber-300 shadow active:scale-95">
+          ⚙️ <span class="hidden sm:inline">AI 設定</span>
+        </button>
+        <button onclick="openGuideModal()" aria-label="放到桌面" class="bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+          📱 <span class="hidden sm:inline">放桌面</span>
         </button>
       </div>
+      <button onclick="openOnboarding(true)" aria-label="我的喜好設定" class="sm:hidden w-full bg-white text-[#9A3412] font-extrabold text-lg px-4 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+        🍽️ 我的喜好設定
+      </button>
     </div>
   </header>
 
@@ -686,6 +692,28 @@
     </div>
   </div>
 
+  <!-- 首次使用個人化新手任務 -->
+  <div id="onboardingModal" class="hidden fixed inset-0 z-[10000] bg-stone-950/70 p-3 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="max-w-2xl mx-auto my-4 sm:my-10 bg-[#FFFDF7] border-4 border-[#9A3412] rounded-[2rem] shadow-2xl overflow-hidden">
+      <div class="bg-[#9A3412] text-white p-5 sm:p-7">
+        <div class="flex items-center justify-between gap-3">
+          <div><p class="text-amber-100 text-lg font-bold" id="onboardingStepLabel">新手任務 1 / 3</p><h2 id="onboardingTitle" class="text-3xl sm:text-4xl font-black">認識你的冰箱</h2></div>
+          <span class="text-5xl" id="onboardingEmoji">🧺</span>
+        </div>
+        <div class="mt-4 h-3 bg-white/30 rounded-full overflow-hidden"><div id="onboardingProgress" class="h-full bg-amber-300 rounded-full transition-all" style="width:33%"></div></div>
+      </div>
+      <div class="p-5 sm:p-7 space-y-5">
+        <p id="onboardingDescription" class="text-xl text-stone-700 font-bold">先選幾樣家裡常買的食材，之後找菜更順手。可以複選，也能跳過。</p>
+        <div id="onboardingChoices" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+        <div class="flex gap-3 pt-2">
+          <button id="onboardingBackBtn" onclick="moveOnboarding(-1)" class="hidden flex-1 py-3 rounded-2xl border-2 border-stone-400 bg-white font-extrabold text-xl">← 上一步</button>
+          <button id="onboardingNextBtn" onclick="moveOnboarding(1)" class="flex-[2] py-4 rounded-2xl bg-[#9A3412] text-white font-black text-2xl shadow-lg">下一關 →</button>
+        </div>
+        <div class="flex justify-between items-center text-base font-bold text-stone-500"><span>喜好可隨時修改</span><button onclick="skipOnboarding()" class="underline">稍後再設定</button></div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- ================= 彈窗 2：Gemini AI API 設定 ================= -->
   <div id="aiModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
@@ -696,7 +724,7 @@
       </div>
 
       <p class="text-xl text-stone-700 font-bold leading-relaxed">
-        點選食材圖示或用麥克風唸出冰箱食材時，系統除了即時過濾內建食譜，還能呼叫 <strong>Google Gemini AI</strong> 依照選定的<strong>料理方式（炒、滷、燉、蒸、煎、烤、涼拌、炸）</strong>即時編寫「全家大小都愛吃的 3～4 步大字台式家常食譜」。
+        點選食材圖示或用麥克風唸出冰箱食材時，系統除了即時過濾內建食譜，還能呼叫 <strong>Google Gemini AI</strong> 依照選定的<strong>料理方式與料理風格</strong>即時編寫「全家大小都愛吃的 3～4 步大字家常食譜」。
       </p>
 
       <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 space-y-2">
@@ -808,6 +836,7 @@
         setTimeout(() => {
           overlay.classList.add('hidden');
           overlay.classList.remove('transition-opacity', 'duration-300', 'opacity-0');
+          if (localStorage.getItem('SENIOR_MEAL_ONBOARDING_DONE') !== '1') openOnboarding();
         }, 300);
       } else {
         const dotsWrapper = document.getElementById('pinDotsWrapper');
@@ -1207,10 +1236,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 10, 11, 12],
         familyTags: ['#白飯殺手', '#小孩超愛淋飯', '#10分鐘上菜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：起鍋前多留一點酸甜紅湯汁，孫子跟年輕人最愛直接舀湯汁拌白飯，長輩吃也滑嫩順口！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '台式番茄炒蛋 滑嫩 家常菜',
-        youtubeStartSec: 30,
-        youtubeChannel: '台灣媽媽味十分鐘快手菜',
         ingredients: [
           { name: '牛番茄', amount: '3 顆（切塊）' },
           { name: '雞蛋', amount: '5 顆' },
@@ -1236,10 +1261,6 @@
         seasonMonths: [10, 11, 12, 1, 2, 3, 4],
         familyTags: ['#熱炒店人氣', '#鮮甜清脆', '#全家必備青菜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：菜梗先下鍋加半碗水悶 1 分鐘再下菜葉，這樣菜葉清脆、菜梗軟甜，全家老少都愛吃！',
-        youtubeVideoId: 'M7lc1UVf-VE',
-        youtubeSearchQuery: '櫻花蝦炒高麗菜 阿基師 家常菜',
-        youtubeStartSec: 42,
-        youtubeChannel: '台灣家常料理精選',
         ingredients: [
           { name: '台灣高麗菜', amount: '半顆（手撕大片）' },
           { name: '櫻花蝦（或蝦米）', amount: '2 大匙' },
@@ -1265,10 +1286,6 @@
         seasonMonths: [4, 5, 6, 7, 8, 9, 10],
         familyTags: ['#湯汁拌飯超鮮', '#極軟好咬', '#夏日人氣菜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：絲瓜悶出的天然甜湯融合蛤蜊海味，連一滴鹽都不用多加，淋在白飯上小孩超愛！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '蛤蜊絲瓜 不發黑 鮮甜煮法',
-        youtubeStartSec: 25,
-        youtubeChannel: '農糧署當季鮮蔬料理',
         ingredients: [
           { name: '台灣絲瓜', amount: '1 條（削皮切厚片）' },
           { name: '吐沙蛤蜊', amount: '250 克' },
@@ -1293,10 +1310,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#國民白飯殺手', '#帶便當首選', '#兒孫最愛'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：滷鍋裡順便放幾顆雞蛋與板豆腐、豆干，小孩愛吃滷蛋、大人愛吃控肉、長輩夾軟嫩滷豆腐！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '古早味滷肉 紅燒五花肉 家常做法',
-        youtubeStartSec: 35,
-        youtubeChannel: '台式媽媽傳家手路菜',
         ingredients: [
           { name: '帶皮五花肉（或梅花肉塊）', amount: '500 克（切大塊）' },
           { name: '水煮雞蛋與板豆腐/豆干', amount: '4 顆 + 1 盒' },
@@ -1322,10 +1335,6 @@
         seasonMonths: [1, 2, 3, 4, 9, 10, 11, 12],
         familyTags: ['#小朋友最愛', '#帶便當不走味', '#一鍋有肉有菜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：洋蔥炒軟後會釋放天然甜味，馬鈴薯燉到綿密鬆軟，不論配白飯或拌麵都超受歡迎！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '馬鈴薯燉肉 豬肉 家常做法',
-        youtubeStartSec: 40,
-        youtubeChannel: '家庭常備便當主菜',
         ingredients: [
           { name: '五花肉片或梅花豬肉片', amount: '300 克' },
           { name: '馬鈴薯', amount: '2 顆（切滾刀塊）' },
@@ -1350,10 +1359,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#零油煙電鍋菜', '#鮮甜多汁', '#老少咸宜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：盤底鋪滿嫩豆腐吸收鮮魚與破布子的甘甜湯汁，小朋友愛吃滑豆腐、大人長輩吃鮮魚！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '破布子清蒸鱸魚 豆腐 電鍋',
-        youtubeStartSec: 30,
-        youtubeChannel: '台式海鮮家常料理',
         ingredients: [
           { name: '新鮮鱸魚或無刺鯛魚片', amount: '1 尾 / 350 克' },
           { name: '嫩豆腐', amount: '1 盒（切厚片）' },
@@ -1379,10 +1384,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#電鍋免顧火', '#布丁般滑嫩', '#早午晚餐百搭'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：電鍋蓋子記得夾一根筷子留小縫，蒸出來的蛋就像布丁一樣零氣孔，小孩跟長輩都超愛！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '電鍋 瓜仔肉蒸蛋 家常做法',
-        youtubeStartSec: 25,
-        youtubeChannel: '台灣電鍋懶人料理室',
         ingredients: [
           { name: '雞蛋', amount: '4 顆' },
           { name: '脆瓜（蔭瓜）罐頭', amount: '3 大匙（切碎連湯汁）' },
@@ -1407,10 +1408,6 @@
         seasonMonths: [9, 10, 11, 12, 1, 2, 3],
         familyTags: ['#全家補元氣', '#湯頭甘甜不油', '#雞腿肉超嫩'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：山藥在最後 10 分鐘才下鍋，就能同時保有鬆軟口感又不會讓湯變混濁，全家喝了暖呼呼！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '香菇山藥雞湯 電鍋 養生',
-        youtubeStartSec: 45,
-        youtubeChannel: '台灣家庭四季煲湯',
         ingredients: [
           { name: '切塊帶骨雞腿肉', amount: '500 克' },
           { name: '台灣山藥', amount: '300 克（切大塊）' },
@@ -1436,10 +1433,6 @@
         seasonMonths: [10, 11, 12, 1, 2, 3, 4],
         familyTags: ['#小孩愛啃甜玉米', '#蘿蔔入口即化', '#電鍋一鍵搞定'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：加一根黃甜玉米跟白蘿蔔一起燉，湯頭自然甘甜不用放味精，孫子啃玉米、大人長輩吃排骨蘿蔔！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '玉米白蘿蔔排骨湯 清甜做法',
-        youtubeStartSec: 35,
-        youtubeChannel: '台式暖心燉湯教學',
         ingredients: [
           { name: '台灣白蘿蔔', amount: '1 條（削厚皮切塊）' },
           { name: '黃甜玉米', amount: '1 根（切段）' },
@@ -1464,10 +1457,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#不加一滴油乾煎', '#外皮焦脆肉多汁', '#全家搶食'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：雞腿皮朝下冷鍋直接乾煎，逼出的雞油剛好拿來順便煎一盤厚切菜脯蛋，一鍋兩道菜超省時！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '香煎去骨雞腿排 脆皮多汁做法',
-        youtubeStartSec: 30,
-        youtubeChannel: '台式鐵板家常料理',
         ingredients: [
           { name: '去骨大雞腿排', amount: '2 片' },
           { name: '雞蛋與白蘿蔔乾（菜脯）', amount: '3 顆 + 2 大匙' },
@@ -1492,10 +1481,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#氣炸烤箱免油煙', '#小孩愛吃椒鹽菇', '#豐富魚油'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：烤鯖魚的同時在旁邊鋪一圈滾刀切塊的杏鮑菇，魚油滴在菇上烤出來比鹽酥雞攤還香，卻完全不用油炸！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '氣炸鍋 烤鯖魚 杏鮑菇',
-        youtubeStartSec: 25,
-        youtubeChannel: '現代家庭無油煙氣炸料理',
         ingredients: [
           { name: '薄鹽鯖魚片（鮮魚）', amount: '2 片' },
           { name: '杏鮑菇', amount: '3 根（切滾刀塊）' },
@@ -1520,10 +1505,6 @@
         seasonMonths: [3, 4, 5, 6, 7, 8, 9, 10],
         familyTags: ['#100%無油煙', '#麵攤人氣招牌', '#清爽不油膩'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：同一鍋滾水先燙地瓜葉、再關火用餘溫燜熟五花肉薄片，肉片超軟嫩不乾柴，淋上蒜泥醬油膏全家秒殺！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '蒜泥白肉 肉片 軟嫩做法',
-        youtubeStartSec: 20,
-        youtubeChannel: '台灣小吃在家輕鬆做',
         ingredients: [
           { name: '五花肉火鍋薄片', amount: '300 克' },
           { name: '台灣地瓜葉或空心菜', amount: '1 把' },
@@ -1548,10 +1529,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#傳統油炸料理', '#便當主菜霸主', '#孫子回家必點'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：炸好後留一片切塊直接吃香酥口感；長輩要吃的那片可放進滷汁或電鍋稍微蒸 3 分鐘，變成軟嫩「滷排骨」！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '古早味炸排骨 軟嫩醃料做法',
-        youtubeStartSec: 40,
-        youtubeChannel: '台灣古早味辦桌菜',
         ingredients: [
           { name: '帶骨豬排骨（里肌排）', amount: '3 片（請肉攤拍鬆）' },
           { name: '醬油、米酒、糖', amount: '各 1 大匙' },
@@ -1576,10 +1553,6 @@
         seasonMonths: [1, 2, 3, 4, 9, 10, 11, 12],
         familyTags: ['#五彩繽紛', '#蝦仁Q彈', '#小孩愛吃青花菜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：花椰菜先燙 1 分鐘再炒，不僅翠綠漂亮、梗也軟嫩好咬，配鮮蝦與木耳營養滿分！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '蝦仁炒花椰菜 玉米筍 家常做法',
-        youtubeStartSec: 25,
-        youtubeChannel: '台灣家庭健康快炒',
         ingredients: [
           { name: '綠花椰菜（青花菜）', amount: '1 朵（切小朵）' },
           { name: '白蝦仁（鮮蝦）', amount: '200 克' },
@@ -1604,10 +1577,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#牛肉滑嫩不柴', '#洋蔥甘甜', '#10分鐘扒光白飯'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：牛肉片下鍋前先抓一點點醬油與太白粉水，關火利用滑蛋餘溫拌熟，長輩與小孩咬起來像豆腐一樣嫩！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '洋蔥滑蛋炒牛肉 軟嫩做法',
-        youtubeStartSec: 30,
-        youtubeChannel: '台式熱炒主廚秘笈',
         ingredients: [
           { name: '牛肉火鍋肉片（或梅花豬肉片）', amount: '250 克' },
           { name: '洋蔥', amount: '1 顆（切絲）' },
@@ -1632,10 +1601,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#大刺好挑', '#零額外加油', '#豐富DHA全家補腦'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：鮭魚完全無細刺，最適合長輩與小朋友！煎鮭魚流出的天然魚油直接拿來炒一把青江菜或菠菜，一鍋搞定魚跟菜！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '乾煎鮭魚 不沾鍋 外酥內嫩',
-        youtubeStartSec: 30,
-        youtubeChannel: '台灣家庭少油海味廚房',
         ingredients: [
           { name: '輪切厚鮭魚片', amount: '1 大片（約 300 克）' },
           { name: '菠菜或青江菜、空心菜', amount: '1 把（洗淨切段）' },
@@ -1660,10 +1625,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#豆干軟Q入味', '#下飯便當王', '#香氣滿屋'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：豆干先用熱水燙過再切條下鍋，吃起來會像海綿一樣吸飽肉絲醬香，不會硬邦邦！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '豆干炒肉絲 軟嫩入味做法',
-        youtubeStartSec: 25,
-        youtubeChannel: '台灣客家與台式家常菜',
         ingredients: [
           { name: '傳統黃豆干（或豆皮）', amount: '5 片（切條）' },
           { name: '梅花豬肉絲（或透抽中卷圈）', amount: '200 克' },
@@ -1688,10 +1649,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#冬粉滑順好入口', '#小孩長輩搶著夾', '#一鍋當主食'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：冬粉剪成兩段再下鍋吸滿鮮蝦高湯，長輩與小孩夾起來方便又不噎口！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '鮮蝦粉絲煲 家常簡單做法',
-        youtubeStartSec: 30,
-        youtubeChannel: '台式煲仔家常料理',
         ingredients: [
           { name: '冬粉（粉絲）', amount: '3 把（溫水泡軟剪半）' },
           { name: '白蝦或蝦仁（亦可換五花肉片）', amount: '10 隻' },
@@ -1716,10 +1673,6 @@
         seasonMonths: [4, 5, 6, 7, 8, 9, 10],
         familyTags: ['#回甘不苦澀', '#電鍋免顧火', '#退火補元氣'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：把白苦瓜裡面的白膜用湯匙刮乾淨（或改用冬瓜配貢丸），燉出來只有甘甜沒有苦味，小孩也敢喝！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '苦瓜雞湯 冬瓜蛤蜊排骨湯 電鍋',
-        youtubeStartSec: 35,
-        youtubeChannel: '台灣四季家常湯品',
         ingredients: [
           { name: '白玉苦瓜或冬瓜', amount: '1 條（切厚塊）' },
           { name: '帶骨雞腿肉或貢丸、魚丸', amount: '400 克' },
@@ -1744,10 +1697,6 @@
         seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         familyTags: ['#鹹香起沙', '#拌飯超開胃', '#老少咸宜'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：鹹蛋黃炒出金黃泡沫後裹在嫩豆腐與杏鮑菇、苦瓜上，鹹香綿密超級下飯！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '金沙豆腐 鹹蛋苦瓜 家常做法',
-        youtubeStartSec: 25,
-        youtubeChannel: '台式熱炒名菜在家做',
         ingredients: [
           { name: '板豆腐或嫩豆腐', amount: '1 盒（切塊）' },
           { name: '熟鹹蛋（或皮蛋）', amount: '2 顆（蛋黃蛋白分開壓碎）' },
@@ -1772,10 +1721,6 @@
         seasonMonths: [4, 5, 6, 7, 8, 9, 10],
         familyTags: ['#茄子亮紫不發黑', '#入口即化', '#白飯殺手'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：不用過油炸！茄子切段後加一匙油與白醋放滾水壓著燙 2 分鐘，一樣保持漂亮紫色又軟嫩少油！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '塔香茄子 絞肉 不油炸不變黑',
-        youtubeStartSec: 30,
-        youtubeChannel: '台灣媽媽少油省時料理',
         ingredients: [
           { name: '台灣長茄子或四季豆', amount: '2 條 / 1 把（切段）' },
           { name: '豬絞肉', amount: '150 克' },
@@ -1800,10 +1745,6 @@
         seasonMonths: [1, 2, 5, 6, 7, 8, 11, 12],
         familyTags: ['#電鍋先蒸再煎', '#鹹香下飯', '#年節家常必備'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：香腸先放電鍋蒸熟再切片下鍋爆炒蒜苗或竹筍，不僅完全不焦黑，肉質還特別軟嫩多汁！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: '蒜苗炒香腸 電鍋蒸 不焦黑做法',
-        youtubeStartSec: 25,
-        youtubeChannel: '台灣古早味家常小炒',
         ingredients: [
           { name: '台式香腸或臘肉、培根', amount: '3 條' },
           { name: '蒜苗或青蔥、竹筍、高麗菜', amount: '2 支 / 1 碗' },
@@ -1832,6 +1773,85 @@
     let wakeLockSentinel = null;
     let speechRecognition = null;
     let isListening = false;
+    const MEAL_PROFILE_KEY = 'SENIOR_MEAL_PROFILE_V1';
+    const ONBOARDING_STEPS = [
+      { key: 'ingredients', title: '認識你的冰箱', emoji: '🧺', description: '選幾樣家裡常買的食材，它們會加入常用清單。', choices: () => VISUAL_INGREDIENTS.map(i => ({ id: i.name, label: i.name, icon: i.icon })), multi: true },
+      { key: 'methods', title: '挑選順手的煮法', emoji: '🍳', description: '先選最常用的一種，首頁會先用它篩選食譜；之後隨時可以切換。', choices: () => COOKING_METHODS.filter(m => m.code !== 'all').map(m => ({ id: m.code, label: m.label, icon: m.icon })) },
+      { key: 'cuisines', title: '選你愛吃的料理風格', emoji: '🌏', description: '可複選，第一個選擇會作為 AI 配菜的預設風格。內建食譜目前以台式為主；選其他風格後，AI 會依喜好設計。', choices: () => [{id:'台式',label:'台式',icon:'🇹🇼'},{id:'中式',label:'中式',icon:'🥢'},{id:'日式',label:'日式',icon:'🍣'},{id:'韓式',label:'韓式',icon:'🍲'},{id:'義式',label:'義式',icon:'🍝'},{id:'法式',label:'法式',icon:'🥐'},{id:'泰式',label:'泰式',icon:'🌶️'}] }
+    ];
+    let onboardingStep = 0;
+    let onboardingDraft = null;
+
+    function getMealProfile() {
+      try { return JSON.parse(localStorage.getItem(MEAL_PROFILE_KEY) || '{}') || {}; } catch (e) { return {}; }
+    }
+
+    function openOnboarding(edit = false) {
+      const saved = getMealProfile();
+      onboardingDraft = {
+        ingredients: [...(saved.ingredients || getSavedFavorites())],
+        methods: [...(saved.methods || [])],
+        cuisines: [...(saved.cuisines || ['台式'])]
+      };
+      onboardingStep = 0;
+      document.getElementById('onboardingModal').classList.remove('hidden');
+      renderOnboardingStep();
+    }
+
+    function renderOnboardingStep() {
+      const step = ONBOARDING_STEPS[onboardingStep];
+      document.getElementById('onboardingTitle').textContent = step.title;
+      document.getElementById('onboardingEmoji').textContent = step.emoji;
+      document.getElementById('onboardingStepLabel').textContent = `新手任務 ${onboardingStep + 1} / ${ONBOARDING_STEPS.length}`;
+      document.getElementById('onboardingDescription').textContent = step.description;
+      document.getElementById('onboardingProgress').style.width = `${((onboardingStep + 1) / ONBOARDING_STEPS.length) * 100}%`;
+      document.getElementById('onboardingBackBtn').classList.toggle('hidden', onboardingStep === 0);
+      const next = document.getElementById('onboardingNextBtn');
+      next.textContent = onboardingStep === ONBOARDING_STEPS.length - 1 ? '完成設定 🎉' : '下一關 →';
+      document.getElementById('onboardingChoices').innerHTML = step.choices().map(choice => {
+        const selected = onboardingDraft[step.key].includes(choice.id);
+        return `<button type="button" aria-pressed="${selected}" onclick="toggleOnboardingChoice('${step.key}', '${choice.id}')" class="min-h-[76px] p-3 rounded-2xl border-4 ${selected ? 'border-[#9A3412] bg-amber-100 text-[#7C2D12]' : 'border-stone-300 bg-white text-stone-800'} font-extrabold text-lg shadow-sm flex items-center justify-center gap-2"><span class="text-3xl">${choice.icon}</span><span>${choice.label}</span>${selected ? '<span>✓</span>' : ''}</button>`;
+      }).join('');
+    }
+
+    function toggleOnboardingChoice(key, id) {
+      const values = onboardingDraft[key];
+      if (key === 'methods') {
+        onboardingDraft.methods = values[0] === id ? [] : [id];
+        renderOnboardingStep();
+        return;
+      }
+      const index = values.indexOf(id);
+      if (index >= 0) values.splice(index, 1); else values.push(id);
+      renderOnboardingStep();
+    }
+
+    function moveOnboarding(direction) {
+      const nextStep = onboardingStep + direction;
+      if (nextStep < 0) return;
+      if (nextStep >= ONBOARDING_STEPS.length) { saveOnboarding(); return; }
+      onboardingStep = nextStep;
+      renderOnboardingStep();
+    }
+
+    function saveOnboarding() {
+      if (!onboardingDraft) return;
+      localStorage.setItem(MEAL_PROFILE_KEY, JSON.stringify(onboardingDraft));
+      saveFavorites(onboardingDraft.ingredients);
+      activeCookingMethod = onboardingDraft.methods[0] || 'all';
+      renderVisualIngredients();
+      renderCookingMethodTabs();
+      renderRecipeList();
+
+      document.getElementById('onboardingModal').classList.add('hidden');
+      onboardingDraft = null;
+      localStorage.setItem('SENIOR_MEAL_ONBOARDING_DONE', '1');
+    }
+
+    function skipOnboarding() {
+      if (onboardingDraft) saveOnboarding();
+      else document.getElementById('onboardingModal').classList.add('hidden');
+    }
 
     // 讀取或初始化「我的最愛釘選清單」與「點選次數統計」
     function getSavedFavorites() {
@@ -1839,7 +1859,7 @@
         const raw = localStorage.getItem('SENIOR_MEAL_FAV_INGS');
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         }
       } catch (e) {}
       // 預設台灣家庭冰箱最常出現的 10 種國民食材
@@ -1884,12 +1904,16 @@
       renderCookingMethodTabs();
       renderRecipeList();
 
+      if (localStorage.getItem('SENIOR_MEAL_ONBOARDING_DONE') !== '1' && (localStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN || sessionStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN)) {
+        openOnboarding();
+      }
+
       // 初始化食材圖示長按 Tooltip
       initIngIconTooltip();
 
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=5').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=6').then(reg => {
           reg.update();
         }).catch(() => {});
       }
@@ -2219,6 +2243,8 @@
       const rawInput = document.getElementById('ingredientInput').value.trim();
       const targetIngredients = rawInput || '高麗菜、五花肉';
       const chosenMethod = activeCookingMethod === 'all' ? '家常快炒' : activeCookingMethod;
+      const profile = getMealProfile();
+      const chosenCuisine = (profile.cuisines || ['台式'])[0] || '台式';
 
       const btn = document.getElementById('aiGenerateBtn');
       const btnText = document.getElementById('aiGenerateBtnText');
@@ -2232,17 +2258,17 @@
         let generatedRecipe = null;
 
         if (apiKey) {
-          generatedRecipe = await callGeminiRecipeAPI(apiKey, targetIngredients, chosenMethod);
+          generatedRecipe = await callGeminiRecipeAPI(apiKey, targetIngredients, chosenMethod, chosenCuisine);
         } else {
           await new Promise(r => setTimeout(r, 650));
-          generatedRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod);
+          generatedRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod, chosenCuisine);
         }
 
         allRecipes = [generatedRecipe, ...allRecipes.filter(r => r.id !== generatedRecipe.id)];
         renderRecipeList();
         openRecipeDetail(generatedRecipe.id);
       } catch (err) {
-        const fallbackRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod);
+        const fallbackRecipe = buildSmartLocalTaiwanRecipe(targetIngredients, chosenMethod, chosenCuisine);
         allRecipes = [fallbackRecipe, ...allRecipes];
         renderRecipeList();
         openRecipeDetail(fallbackRecipe.id);
@@ -2252,19 +2278,20 @@
       }
     }
 
-    async function callGeminiRecipeAPI(apiKey, ingredientsText, chosenMethod) {
+    async function callGeminiRecipeAPI(apiKey, ingredientsText, chosenMethod, chosenCuisine = '台式') {
       const noFryInstruction = excludeDeepFried
         ? '家人不吃油炸料理，嚴禁出現油炸步驟！'
         : '';
 
       const prompt = `
-你是一位精通台灣在地家常菜的台菜主廚。
+你是一位精通各地家常菜的主廚，請依照指定料理風格設計食譜。
 掌廚者是 60~70 歲的台灣媽媽/長輩（所以步驟文字必須極度精簡清晰），但這道菜是要煮給「全家大小（阿公阿嬤、上班族兒女、小孩）」一起吃的！
 目前選定的食材是：「${ingredientsText}」（現在是台灣 ${currentMonth} 月）。
 指定使用的料理方式（烹調法）為：「${chosenMethod}」。
+指定料理風格為：「${chosenCuisine}」。調味、食材搭配與菜名請符合該風格。
 ${noFryInstruction}
 
-請設計 1 道最道地、開胃下飯、老少咸宜的「台式家常菜」（3~4人份）。
+請設計 1 道道地、開胃下飯、老少咸宜的「${chosenCuisine}家常菜」（3~4人份）。
 嚴格遵守：
 1. 食材清單只列客觀名稱與份量（3~4人份）。
 2. 料理步驟必須精簡為 3 到 4 個步驟，每一步不超過 35 個字，口吻溫暖直白，嚴禁複製網路食譜原文。
@@ -2278,7 +2305,6 @@ ${noFryInstruction}
   "cookTimeMins": 18,
   "familyTags": ["#${chosenMethod}", "#全家搶食", "#白飯殺手"],
   "familyTip": "👨‍👩‍👧‍👦 全家共食撇步：...",
-  "youtubeSearchQuery": "用來在YouTube搜尋這道菜教學的關鍵字",
   "ingredients": [
     {"name": "食材名", "amount": "份量描述"}
   ],
@@ -2310,7 +2336,7 @@ ${noFryInstruction}
 
       return {
         id: 'ai-' + Date.now(),
-        title: parsed.title || `${chosenMethod}${ingredientsText}`,
+        title: parsed.title || `${chosenCuisine}${chosenMethod}${ingredientsText}`,
         emoji: parsed.emoji || '🍲',
         mealSlot: parsed.mealSlot || '下飯主菜',
         cookingMethod: parsed.cookingMethod || chosenMethod,
@@ -2319,17 +2345,14 @@ ${noFryInstruction}
         seasonMonths: [currentMonth],
         familyTags: Array.isArray(parsed.familyTags) ? parsed.familyTags : [`#${chosenMethod}`, '#全家愛吃', '#AI主廚配菜'],
         familyTip: parsed.familyTip || '👨‍👩‍👧‍👦 全家共食撇步：起鍋前可先盛起一份原味給小孩與長輩，剩下的加點蔥蒜辣椒拌炒給年輕人下飯！',
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: parsed.youtubeSearchQuery || `${parsed.title} 台式家常菜 做法`,
-        youtubeStartSec: 30,
-        youtubeChannel: '✨ AI 智慧配菜 ＋ YouTube 官方影片搜尋輔助',
+        cuisineStyle: chosenCuisine,
         ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [{ name: ingredientsText, amount: '適量' }],
         steps: Array.isArray(parsed.steps) ? parsed.steps.slice(0, 4) : [],
         isAiGenerated: true
       };
     }
 
-    function buildSmartLocalTaiwanRecipe(ingredientsText, chosenMethod) {
+    function buildSmartLocalTaiwanRecipe(ingredientsText, chosenMethod, chosenCuisine = '台式') {
       const items = ingredientsText
         .split(/[、,，\s]+/)
         .map(s => s.trim())
@@ -2458,12 +2481,24 @@ ${noFryInstruction}
         name,
         amount: idx === 0 ? '1 份（約 350 克，切適口大小）' : '適量（洗淨備用）'
       }));
-      ingredientObjs.push({ name: '蔥、薑、蒜頭', amount: '少許（台式爆香提味）' });
-      ingredientObjs.push({ name: '醬油與鹽巴', amount: '適量' });
+      const flavorBase = {
+        '台式': ['蔥、薑、蒜頭', '醬油與米酒'], '中式': ['蔥、薑、蒜頭', '醬油與米酒'],
+        '日式': ['洋蔥、薑', '醬油、味醂'], '韓式': ['蒜頭、蔥', '韓式辣醬、芝麻油'],
+        '義式': ['蒜頭、洋蔥', '橄欖油、義式香料'], '法式': ['洋蔥、蒜頭', '奶油、香草'],
+        '泰式': ['蒜頭、辣椒', '魚露、檸檬汁']
+      }[chosenCuisine] || ['蔥、薑、蒜頭', '醬油與鹽巴'];
+      ingredientObjs.push({ name: flavorBase[0], amount: '少許（爆香提味）' });
+      ingredientObjs.push({ name: flavorBase[1], amount: '適量' });
+      const localSteps = chosenCuisine === '台式' ? tpl.steps : [
+        `將「${mainItem}」與「${subItem}」洗切備妥，用${flavorBase[1]}簡單調味。`,
+        `依「${chosenMethod}」方式加熱料理，注意火候並確認食材熟透。`,
+        `加入「${flavorBase[0]}」與少量水或高湯，煮至食材熟透入味。`,
+        '試味後調整鹹淡，盛盤趁熱享用。'
+      ];
 
       return {
         id: 'ai-' + Date.now(),
-        title: tpl.title,
+        title: chosenCuisine === '台式' ? tpl.title : `${chosenCuisine}風味${mainItem}${subItem}`,
         emoji: tpl.emoji,
         mealSlot: tpl.slot,
         cookingMethod: chosenMethod,
@@ -2471,13 +2506,10 @@ ${noFryInstruction}
         cookTimeMins: tpl.time,
         seasonMonths: [currentMonth],
         familyTags: tpl.tags,
-        familyTip: tpl.tip,
-        youtubeVideoId: 'aqz-KE-bpKQ',
-        youtubeSearchQuery: `${chosenMethod} ${mainItem} ${subItem} 家常做法`,
-        youtubeStartSec: 30,
-        youtubeChannel: `✨ 依您選擇的「${chosenMethod}」與冰箱食材量身產生`,
+        familyTip: chosenCuisine === '台式' ? tpl.tip : `👨‍👩‍👧‍👦 全家共食撇步：先依${chosenCuisine}風味調好味道，再替長輩與小朋友盛出較清淡的一份。`,
+        cuisineStyle: chosenCuisine,
         ingredients: ingredientObjs,
-        steps: tpl.steps,
+        steps: localSteps,
         isAiGenerated: true
       };
     }
@@ -2597,6 +2629,7 @@ ${noFryInstruction}
               <span class="bg-stone-100 text-stone-800 border-2 border-stone-400 font-extrabold text-xl px-4 py-1 rounded-full">
                 ⏱️ 約 ${recipe.cookTimeMins} 分鐘
               </span>
+              ${recipe.cuisineStyle ? `<span class="bg-sky-100 text-sky-900 border-2 border-sky-400 font-extrabold text-xl px-4 py-1 rounded-full">🌏 ${recipe.cuisineStyle}風味</span>` : ''}
               ${recipe.isAiGenerated ? `<span class="bg-purple-100 text-purple-900 border-2 border-purple-400 font-extrabold text-xl px-3 py-1 rounded-full">✨ AI 專屬配菜</span>` : ''}
             </div>
             <span class="text-5xl shrink-0" aria-hidden="true">${recipe.emoji || '🍲'}</span>
@@ -2699,11 +2732,10 @@ ${noFryInstruction}
       }
 
       // 影片教學：改用 YouTube 搜尋連結，避免錯誤的 Video ID
-      const searchUrl = recipe.youtubeSearchQuery
-        ? `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.youtubeSearchQuery)}`
-        : `https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' 台式家常料理做法')}`;
+      const youtubeQuery = `${recipe.title} ${recipe.cuisineStyle || '家常'} 料理教學 做法 -卡通 -動畫 -兒童`;
+      const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`;
       document.getElementById('youtubeExternalBtn').href = searchUrl;
-      document.getElementById('detailChannelCredit').textContent = `🔍 搜尋關鍵字：${recipe.youtubeSearchQuery || recipe.title}`;
+      document.getElementById('detailChannelCredit').textContent = `🔍 搜尋「${recipe.title}」的實作料理教學影片`;
 
       renderDetailIngredientsList(recipe);
 
