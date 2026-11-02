@@ -1776,7 +1776,7 @@
     const MEAL_PROFILE_KEY = 'SENIOR_MEAL_PROFILE_V1';
     const ONBOARDING_STEPS = [
       { key: 'ingredients', title: '認識你的冰箱', emoji: '🧺', description: '選幾樣家裡常買的食材，它們會加入常用清單。', choices: () => VISUAL_INGREDIENTS.map(i => ({ id: i.name, label: i.name, icon: i.icon })), multi: true },
-      { key: 'methods', title: '挑選順手的煮法', emoji: '🍳', description: '先選最常用的一種，首頁會先用它篩選食譜；之後隨時可以切換。', choices: () => COOKING_METHODS.filter(m => m.code !== 'all').map(m => ({ id: m.code, label: m.label, icon: m.icon })) },
+      { key: 'methods', title: '挑選順手的煮法', emoji: '🍳', description: '可複選幾種家裡常用的煮法；首頁會先用第一個選擇篩選食譜，之後隨時可以切換。', choices: () => COOKING_METHODS.filter(m => m.code !== 'all').map(m => ({ id: m.code, label: m.label, icon: m.icon })), multi: true },
       { key: 'cuisines', title: '選你愛吃的料理風格', emoji: '🌏', description: '可複選，第一個選擇會作為 AI 配菜的預設風格。內建食譜目前以台式為主；選其他風格後，AI 會依喜好設計。', choices: () => [{id:'台式',label:'台式',icon:'🇹🇼'},{id:'中式',label:'中式',icon:'🥢'},{id:'日式',label:'日式',icon:'🍣'},{id:'韓式',label:'韓式',icon:'🍲'},{id:'義式',label:'義式',icon:'🍝'},{id:'法式',label:'法式',icon:'🥐'},{id:'泰式',label:'泰式',icon:'🌶️'}] }
     ];
     let onboardingStep = 0;
@@ -1816,11 +1816,6 @@
 
     function toggleOnboardingChoice(key, id) {
       const values = onboardingDraft[key];
-      if (key === 'methods') {
-        onboardingDraft.methods = values[0] === id ? [] : [id];
-        renderOnboardingStep();
-        return;
-      }
       const index = values.indexOf(id);
       if (index >= 0) values.splice(index, 1); else values.push(id);
       renderOnboardingStep();
@@ -1913,7 +1908,7 @@
 
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=6').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=7').then(reg => {
           reg.update();
         }).catch(() => {});
       }
