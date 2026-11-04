@@ -261,6 +261,10 @@
         <button onclick="openModal('mealAlchemyModal')" aria-label="一材變三餐" class="bg-amber-900/90 hover:bg-amber-900 text-amber-100 font-extrabold text-base sm:text-lg px-2.5 py-1.5 rounded-xl border-2 border-amber-400 shadow active:scale-95">
           🔄 <span class="hidden sm:inline">變三餐</span>
         </button>
+        <!-- 我的喜好設定 (桌機與平板) -->
+        <button onclick="openOnboarding(true)" aria-label="喜好設定" class="hidden sm:inline-flex bg-amber-900/90 hover:bg-amber-900 text-amber-100 font-extrabold text-base sm:text-lg px-2.5 py-1.5 rounded-xl border-2 border-amber-400 shadow active:scale-95 items-center gap-1">
+          🍽️ <span>喜好設定</span>
+        </button>
         <button onclick="openModal('aiModal')" aria-label="AI 設定" class="bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-2.5 py-2 rounded-xl border-2 border-white shadow active:scale-95">
           ⚙️
         </button>
@@ -1105,7 +1109,7 @@
           <button id="onboardingBackBtn" onclick="moveOnboarding(-1)" class="hidden flex-1 py-3 rounded-2xl border-2 border-stone-400 bg-white font-extrabold text-xl">← 上一步</button>
           <button id="onboardingNextBtn" onclick="moveOnboarding(1)" class="flex-[2] py-4 rounded-2xl bg-[#9A3412] text-white font-black text-2xl shadow-lg">下一關 →</button>
         </div>
-        <div class="flex justify-between items-center text-base font-bold text-stone-500"><span>喜好可隨時修改</span><button onclick="skipOnboarding()" class="underline">稍後再設定</button></div>
+        <div class="flex justify-between items-center text-base font-bold text-stone-500"><span>喜好可隨時修改</span><div class="flex items-center gap-2.5"><button type="button" onclick="forceCheckAppUpdate()" class="text-sm text-amber-900 font-bold underline bg-amber-100/90 hover:bg-amber-200 px-2.5 py-1 rounded-xl border border-amber-300">🔄 檢查最新更新</button><button onclick="skipOnboarding()" class="underline">稍後再設定</button></div></div>
       </div>
     </div>
   </div>
@@ -2529,8 +2533,8 @@
       {
         code: '家常快炒',
         label: '家常快炒',
-        icon: '🥬',
-        benefit: '🥬 家常快炒：台灣餐桌靈魂！熱炒下飯肉片、炒蛋與脆甜季節時蔬，10～15 分鐘快速開飯。'
+        icon: '🥢',
+        benefit: '🥢 家常快炒：台灣餐桌靈魂！熱炒下飯肉片、炒蛋與脆甜季節時蔬，10～15 分鐘快速開飯。'
       },
       {
         code: '紅燒／滷製',
@@ -3576,7 +3580,26 @@
     let isListening = false;
     const MEAL_PROFILE_KEY = 'SENIOR_MEAL_PROFILE_V1';
     const ONBOARDING_STEPS = [
-      { key: 'ingredients', title: '認識你的冰箱', emoji: '🧺', description: '選幾樣家裡常買的食材，它們會加入常用清單。', choices: () => VISUAL_INGREDIENTS.map(i => ({ id: i.name, label: i.name, icon: i.icon })), multi: true },
+      {
+        key: 'ingredients',
+        title: '認識你的冰箱',
+        emoji: '🧺',
+        description: '選幾樣家裡常買的食材，它們會加入常用清單。',
+        choices: () => {
+          // 貼心排序：優先呈現手繪向量專屬圖示與常用時令鮮蔬，方便主婦與長輩一眼辨識
+          const sorted = [...VISUAL_INGREDIENTS].sort((a, b) => {
+            const aIsSvg = typeof a.icon === 'string' && a.icon.startsWith('<svg');
+            const bIsSvg = typeof b.icon === 'string' && b.icon.startsWith('<svg');
+            if (aIsSvg && !bIsSvg) return -1;
+            if (!aIsSvg && bIsSvg) return 1;
+            if (a.defaultFav && !b.defaultFav) return -1;
+            if (!a.defaultFav && b.defaultFav) return 1;
+            return 0;
+          });
+          return sorted.map(i => ({ id: i.name, label: i.name, icon: i.icon }));
+        },
+        multi: true
+      },
       { key: 'methods', title: '挑選順手的煮法', emoji: '🍳', description: '可複選幾種家裡常用的煮法；首頁會先用第一個選擇篩選食譜，之後隨時可以切換。', choices: () => COOKING_METHODS.filter(m => m.code !== 'all').map(m => ({ id: m.code, label: m.label, icon: m.icon })), multi: true },
       { key: 'cuisines', title: '選你愛吃的料理風格', emoji: '🌏', description: '可複選，第一個選擇會作為 AI 配菜的預設風格。內建食譜目前以中式家常為主；選其他風格後，AI 會依喜好設計。', choices: () => [{id:'中式',label:'中式',icon:'🥢'},{id:'日式',label:'日式',icon:'🍣'},{id:'韓式',label:'韓式',icon:'🍲'},{id:'義式',label:'義式',icon:'🍝'},{id:'法式',label:'法式',icon:'🥐'},{id:'泰式',label:'泰式',icon:'🌶️'}] }
     ];
@@ -3592,6 +3615,26 @@
         }
         return profile;
       } catch (e) { return {}; }
+    }
+
+    
+    // 強制檢查並清除離線快取更新最新版本
+    function forceCheckAppUpdate() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for (let reg of regs) {
+            reg.update();
+            reg.unregister();
+          }
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+          window.location.reload(true);
+        });
+      } else {
+        window.location.reload(true);
+      }
     }
 
     function openOnboarding(edit = false) {
@@ -3620,7 +3663,7 @@
       next.textContent = onboardingStep === ONBOARDING_STEPS.length - 1 ? '完成設定 🎉' : '下一關 →';
       document.getElementById('onboardingChoices').innerHTML = step.choices().map(choice => {
         const selected = onboardingDraft[step.key].includes(choice.id);
-        return `<button type="button" aria-pressed="${selected}" onclick="toggleOnboardingChoice('${step.key}', '${choice.id}')" class="min-h-[76px] p-3 rounded-2xl border-4 ${selected ? 'border-[#9A3412] bg-amber-100 text-[#7C2D12]' : 'border-stone-300 bg-white text-stone-800'} font-extrabold text-lg shadow-sm flex items-center justify-center gap-2"><span class="text-3xl">${choice.icon}</span><span>${choice.label}</span>${selected ? '<span>✓</span>' : ''}</button>`;
+        return `<button type="button" aria-pressed="${selected}" onclick="toggleOnboardingChoice('${step.key}', '${choice.id}')" class="min-h-[76px] p-3 rounded-2xl border-4 ${selected ? 'border-[#9A3412] bg-amber-100 text-[#7C2D12]' : 'border-stone-300 bg-white text-stone-800'} font-extrabold text-lg shadow-sm flex items-center justify-center gap-2"><span class="text-3xl inline-flex items-center justify-center flex-shrink-0">${choice.icon}</span><span class="leading-tight">${choice.label}</span>${selected ? '<span class="text-amber-800 font-black">✓</span>' : ''}</button>`;
       }).join('');
     }
 
@@ -3722,9 +3765,17 @@
       // 初始化食材圖示長按 Tooltip
       initIngIconTooltip();
 
-      // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
+      // 註冊 PWA Service Worker (支援離線快取、桌面啟動與版本自動更新)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=11').then(reg => {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
+        navigator.serviceWorker.register('./sw.js?v=13').then(reg => {
           reg.update();
         }).catch(() => {});
       }
