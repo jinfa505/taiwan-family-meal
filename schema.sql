@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     season_months INT[] NOT NULL,            -- 適合推薦的台灣月份 (1~12)
     family_tags TEXT[] NOT NULL,             -- 全家餐桌標籤，如 {'#白飯殺手', '#小孩超愛', '#長輩好咬', '#帶便當首選'}
     family_tip VARCHAR(150),                 -- 全家共食小撇步（如：一鍋兩吃調整辣度/軟硬度技巧）
+    multi_gen_timeline JSONB,                -- 一鍋老少三段式時序解構：{ stage1: '長輩幼兒先行', stage2: '學童便當', stage3: '大人嗆香' }
     youtube_video_id VARCHAR(20) NOT NULL,   -- YouTube 官方影片 ID
     youtube_start_sec INT DEFAULT 0,         -- 自動跳過片頭閒聊、直接進入備料/下鍋的秒數
     youtube_channel VARCHAR(100) NOT NULL,   -- 官方頻道名稱標註

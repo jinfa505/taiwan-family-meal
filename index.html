@@ -46,6 +46,39 @@
       font-size: 22px;
       line-height: 1.6;
     }
+    /* 字級縮放支援 (標準 22px / 放大 26px / 特大 30px) */
+    html.font-standard body { font-size: 22px; }
+    html.font-large body { font-size: 26px; }
+    html.font-large .text-xl { font-size: 1.45rem; }
+    html.font-large .text-2xl { font-size: 1.7rem; }
+    html.font-large .text-3xl { font-size: 2.1rem; }
+    html.font-xlarge body { font-size: 30px; }
+    html.font-xlarge .text-xl { font-size: 1.65rem; }
+    html.font-xlarge .text-2xl { font-size: 1.95rem; }
+    html.font-xlarge .text-3xl { font-size: 2.4rem; }
+
+    /* 廚房隨侍麥克風呼吸光暈 */
+    @keyframes mic-breath {
+      0% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { transform: scale(1.03); box-shadow: 0 0 0 16px rgba(220, 38, 38, 0); }
+      100% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    .mic-breath-active {
+      animation: mic-breath 1.4s infinite !important;
+    }
+
+    /* 家族手路菜金色閃耀邊框 */
+    .heritage-gold-card {
+      border-color: #B45309 !important;
+      background: linear-gradient(180deg, #FFFDF7 0%, #FEF3C7 100%) !important;
+      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.15) !important;
+    }
+
+    /* 一鍋老少三段解構標籤卡 */
+    .multigen-stage-card {
+      transition: all 0.2s ease-in-out;
+    }
+
     /* 超大核取方塊 */
     .senior-checkbox {
       width: 34px;
@@ -205,15 +238,24 @@
         </div>
       </button>
 
-      <div class="flex items-center gap-2">
-        <button onclick="openOnboarding(true)" aria-label="我的喜好設定" class="hidden sm:block bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
-          🍽️ <span class="hidden sm:inline">我的喜好</span>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- 字級切換大按鈕 (老花眼/中島遠距友善) -->
+        <button id="fontSizeBtn" onclick="cycleFontSize()" aria-label="切換字體大小" class="bg-amber-100 text-[#7C2D12] font-black text-lg px-2.5 sm:px-3 py-2 rounded-xl border-2 border-amber-400 shadow active:scale-95 flex items-center gap-1">
+          <span>Aa</span><span id="fontSizeLabel" class="text-sm font-black">標準</span>
         </button>
-        <button onclick="openModal('aiModal')" aria-label="AI 設定" class="bg-amber-100 text-[#7C2D12] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-amber-300 shadow active:scale-95">
-          ⚙️ <span class="hidden sm:inline">AI 設定</span>
+        <!-- 家族手路菜典藏 -->
+        <button onclick="openModal('familyHeritageModal')" aria-label="家族手路菜" class="bg-amber-900/90 hover:bg-amber-900 text-amber-100 font-extrabold text-base sm:text-lg px-2.5 py-1.5 rounded-xl border-2 border-amber-400 shadow active:scale-95">
+          👵 <span class="hidden sm:inline">手路菜</span>
         </button>
-        <button onclick="openGuideModal()" aria-label="放到桌面" class="bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-3 py-2 rounded-xl border-2 border-white shadow active:scale-95">
-          📱 <span class="hidden sm:inline">放桌面</span>
+        <!-- 一材變三餐 -->
+        <button onclick="openModal('mealAlchemyModal')" aria-label="一材變三餐" class="bg-amber-900/90 hover:bg-amber-900 text-amber-100 font-extrabold text-base sm:text-lg px-2.5 py-1.5 rounded-xl border-2 border-amber-400 shadow active:scale-95">
+          🔄 <span class="hidden sm:inline">變三餐</span>
+        </button>
+        <button onclick="openModal('aiModal')" aria-label="AI 設定" class="bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-2.5 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+          ⚙️
+        </button>
+        <button onclick="openGuideModal()" aria-label="放到桌面" class="bg-white text-[#9A3412] font-bold text-lg px-2 sm:px-2.5 py-2 rounded-xl border-2 border-white shadow active:scale-95">
+          📱
         </button>
       </div>
       <button onclick="openOnboarding(true)" aria-label="我的喜好設定" class="sm:hidden w-full bg-white text-[#9A3412] font-extrabold text-lg px-4 py-2 rounded-xl border-2 border-white shadow active:scale-95">
@@ -229,6 +271,75 @@
          畫面 A：首頁（視覺化點食材圖示過濾 ＋ 8大料理方式 ＋ 全家三餐菜單）
          ================================================================= -->
     <section id="homeView" class="space-y-6">
+
+      <!-- ================= 0. 在地微氣候與 24 節氣時空感知推薦看板 ================= -->
+      <div id="solarTermBanner" class="bg-gradient-to-r from-amber-950 via-[#7C2D12] to-amber-900 text-white rounded-3xl p-5 shadow-lg border-4 border-amber-500 space-y-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-4xl" id="solarTermEmoji">🍂</span>
+              <span id="solarTermBadge" class="bg-amber-300 text-amber-950 font-black text-xl px-3.5 py-1 rounded-full shadow-sm">立冬將至・早晚溫差大</span>
+              <span id="solarTermDate" class="text-amber-200 text-lg font-bold">11月時令節氣</span>
+            </div>
+            <h2 id="solarTermTitle" class="text-2xl sm:text-3xl font-black text-amber-100 leading-snug">
+              早晚轉涼！適宜潤燥溫補，吃白蘿蔔、客家福菜與暖身雞湯
+            </h2>
+            <p id="solarTermDescription" class="text-lg sm:text-xl text-amber-100/90 font-medium">
+              🌾 台灣當季盛產：大菜（芥菜）、菜頭（白蘿蔔）、老薑、帶皮五花肉。一鍋煮透，老少都暖胃！
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-700/60">
+          <span class="text-lg font-extrabold text-amber-200">✨ 當令靈感一鍵帶入：</span>
+          <button type="button" onclick="quickFilterSolarTerm('白蘿蔔')" class="bg-white/20 hover:bg-white/30 border-2 border-amber-300/80 text-white font-extrabold text-lg px-3.5 py-1.5 rounded-xl active:scale-95 shadow-sm">
+            🥣 菜頭排骨湯
+          </button>
+          <button type="button" onclick="quickFilterSolarTerm('芥菜')" class="bg-white/20 hover:bg-white/30 border-2 border-amber-300/80 text-white font-extrabold text-lg px-3.5 py-1.5 rounded-xl active:scale-95 shadow-sm">
+            🥬 客家福菜肉片
+          </button>
+          <button type="button" onclick="quickFilterSolarTerm('五花肉')" class="bg-white/20 hover:bg-white/30 border-2 border-amber-300/80 text-white font-extrabold text-lg px-3.5 py-1.5 rounded-xl active:scale-95 shadow-sm">
+            🥘 客家老味封肉
+          </button>
+          <button type="button" onclick="quickFilterSolarTerm('雞腿')" class="bg-white/20 hover:bg-white/30 border-2 border-amber-300/80 text-white font-extrabold text-lg px-3.5 py-1.5 rounded-xl active:scale-95 shadow-sm">
+            🫚 麻油老薑三杯雞
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 0b. 家人特別照顧模式 (4 大生活情境速選) ================= -->
+      <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">❤️</span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-stone-900">今天家裡誰需要特別照顧？</h3>
+          </div>
+          <button id="clearCareModeBtn" onclick="clearCareMode()" class="hidden text-base sm:text-lg font-black text-red-700 underline">
+            ✕ 清除特別照顧
+          </button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="careModeButtons">
+          <button type="button" onclick="toggleCareMode('exam')" data-care="exam" class="care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition">
+            <span class="text-3xl">🎓</span>
+            <span>考前衝刺補腦</span>
+            <span class="text-sm text-stone-500 font-bold">深海魚/高蛋白</span>
+          </button>
+          <button type="button" onclick="toggleCareMode('comfort')" data-care="comfort" class="care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition">
+            <span class="text-3xl">🤧</span>
+            <span>換季溫補養胃</span>
+            <span class="text-sm text-stone-500 font-bold">老薑燉湯/養生粥</span>
+          </button>
+          <button type="button" onclick="toggleCareMode('soft')" data-care="soft" class="care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition">
+            <span class="text-3xl">🦷</span>
+            <span>長輩幼兒極軟</span>
+            <span class="text-sm text-stone-500 font-bold">免咀嚼/滑嫩入味</span>
+          </button>
+          <button type="button" onclick="toggleCareMode('beauty')" data-care="beauty" class="care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition">
+            <span class="text-3xl">✨</span>
+            <span>主婦凍齡輕盈</span>
+            <span class="text-sm text-stone-500 font-bold">低油抗老/高纖消水</span>
+          </button>
+        </div>
+      </div>
 
       <!-- 1. 【核心升級】點食材大圖示立即過濾菜單 (Visual Ingredient Icon Grid) -->
       <div class="bg-white border-4 border-stone-800 rounded-3xl p-5 shadow-md space-y-4">
@@ -435,6 +546,29 @@
       <!-- 4. 食譜大字卡片列表 -->
       <div id="recipeCardsContainer" class="space-y-5"></div>
 
+      <!-- 底部常駐：30分鐘平行開飯指揮官懸浮條 (當有勾選菜色時顯示) -->
+      <div id="parallelCookStickyBar" class="hidden sticky bottom-4 z-30 bg-[#7C2D12] text-white border-4 border-amber-400 rounded-3xl p-4 shadow-2xl flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="text-4xl">⚡</span>
+          <div>
+            <div class="text-xl sm:text-2xl font-black text-amber-200" id="parallelSelectedSummary">
+              今日菜單已選 2 道料理
+            </div>
+            <div class="text-base sm:text-lg text-amber-100 font-medium">
+              自動排出 30 分鐘雙爐＋電鍋同步上菜排程！
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="openParallelCookModal()" class="py-3 px-4 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-xl rounded-2xl shadow active:scale-95">
+            🚀 啟動排程
+          </button>
+          <button type="button" onclick="clearParallelSelection()" class="py-3 px-3 bg-white/20 text-white font-extrabold text-lg rounded-2xl active:scale-95">
+            ✕
+          </button>
+        </div>
+      </div>
+
     </section>
 
 
@@ -476,6 +610,50 @@
         <!-- 👨‍👩‍👧‍👦 全家共食小撇步 -->
         <div id="detailFamilyTipBox" class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 text-xl font-bold text-[#7C2D12]"></div>
 
+        <!-- ================= 【核心野心】動態一鍋老少三段式解構時序卡 ================= -->
+        <div id="detailMultiGenBox" class="bg-white border-4 border-amber-700/60 rounded-3xl p-5 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-2xl sm:text-3xl font-black text-[#7C2D12] flex items-center gap-2">
+              <span>👨‍👩‍👧‍👦</span> 一鍋搞定全家胃口（三段式起鍋指南）
+            </h3>
+            <span class="bg-amber-100 text-[#7C2D12] font-black text-base px-3 py-1 rounded-xl border border-amber-400">
+              同一鍋・免煮三次
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- 段落 1: 幼兒/長輩先行 -->
+            <div class="multigen-stage-card bg-emerald-50 border-3 border-emerald-500 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center gap-2 text-emerald-950 font-black text-xl">
+                <span>👶👵 第一段【長輩與幼兒先行・軟爛清淡】</span>
+              </div>
+              <p id="multiGenStage1Text" class="text-xl text-emerald-900 font-bold leading-relaxed">
+                食材滾至熟透軟嫩、用料理剪刀剪小塊，在加入辣椒或重口味調味前，先盛起 1 碗無辣低鈉軟爛份量！
+              </p>
+            </div>
+
+            <!-- 段落 2: 學童便當/營養下飯 -->
+            <div class="multigen-stage-card bg-amber-50 border-3 border-amber-500 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center gap-2 text-[#7C2D12] font-black text-xl">
+                <span>🎒 第二段【學童便當與發育・甜鹹下飯】</span>
+              </div>
+              <p id="multiGenStage2Text" class="text-xl text-stone-800 font-bold leading-relaxed">
+                放入雞蛋、豆腐裹上醬香甘甜紅汁，撈取便當菜與小朋友拌飯的最愛份量！
+              </p>
+            </div>
+
+            <!-- 段落 3: 成人大火嗆香 -->
+            <div class="multigen-stage-card bg-rose-50 border-3 border-rose-500 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center gap-2 text-rose-950 font-black text-xl">
+                <span>🌶️ 第三段【大人宵夜下酒・大火嗆香收汁】</span>
+              </div>
+              <p id="multiGenStage3Text" class="text-xl text-rose-900 font-bold leading-relaxed">
+                轉大火投入新鮮辣椒、九層塔或黑胡椒沙茶，快速翻炒 15 秒收濃汁，香氣撲鼻秒殺白飯！
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- 🧺 本道食譜食材圖示（手指長按或點一下看名稱） -->
         <div class="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 space-y-2">
           <div class="flex items-center justify-between flex-wrap gap-2 text-stone-800 font-extrabold text-xl">
@@ -485,6 +663,57 @@
             </span>
           </div>
           <div id="detailVisualIcons" class="flex flex-wrap gap-2.5 pt-1 items-center"></div>
+        </div>
+      </div>
+
+      <!-- ================= 廚房「隱形隨侍」阿妹仔語音助手 ＋ 手油免碰大字計時器 ================= -->
+      <div class="bg-white border-4 border-stone-900 rounded-3xl p-5 sm:p-6 shadow-md space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-4xl">👩‍🍳</span>
+            <div>
+              <h3 class="text-2xl sm:text-3xl font-black text-stone-900">
+                廚房語音隨侍（手油免碰手機）
+              </h3>
+              <p class="text-lg text-stone-600 font-bold">
+                開口說：「下一步」、「上一步」、「計時5分鐘」
+              </p>
+            </div>
+          </div>
+          <button
+            id="kitchenCoPilotBtn"
+            type="button"
+            onclick="toggleKitchenCoPilot()"
+            class="py-3 px-5 rounded-2xl bg-[#B91C1C] text-white font-black text-xl sm:text-2xl border-3 border-red-950 shadow active:scale-95 flex items-center gap-2"
+          >
+            <span id="copilotBtnIcon" class="text-2xl">🎙️</span>
+            <span id="copilotBtnText">開啟語音免觸控</span>
+          </button>
+        </div>
+
+        <!-- 語音對話即時狀態橫幅 -->
+        <div id="copilotLiveStatus" class="hidden bg-red-50 border-2 border-red-400 rounded-2xl p-3 text-center text-xl font-black text-red-900">
+          👂 阿妹仔正在廚房聽您吩咐...（請試試說「下一步」或「計時3分鐘」）
+        </div>
+
+        <!-- 超大字體廚房計時器 -->
+        <div class="bg-warmCard border-3 border-amber-600 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-4xl">⏱️</span>
+            <div>
+              <div class="text-stone-600 font-bold text-lg">料理倒數大計時器：</div>
+              <div id="kitchenTimerDisplay" class="font-mono text-4xl sm:text-5xl font-black text-[#9A3412]">
+                05:00
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="adjustKitchenTimer(1)" class="px-3.5 py-2 rounded-xl bg-amber-100 text-[#7C2D12] border-2 border-amber-400 font-black text-lg active:scale-95">+1 分</button>
+            <button type="button" onclick="adjustKitchenTimer(3)" class="px-3.5 py-2 rounded-xl bg-amber-100 text-[#7C2D12] border-2 border-amber-400 font-black text-lg active:scale-95">+3 分</button>
+            <button type="button" onclick="adjustKitchenTimer(5)" class="px-3.5 py-2 rounded-xl bg-amber-100 text-[#7C2D12] border-2 border-amber-400 font-black text-lg active:scale-95">+5 分</button>
+            <button id="kitchenTimerToggleBtn" type="button" onclick="toggleKitchenTimer()" class="px-4 py-2 rounded-xl bg-emerald-700 text-white font-black text-xl border-2 border-emerald-950 active:scale-95 shadow">▶️ 開始計時</button>
+            <button type="button" onclick="resetKitchenTimer()" class="px-3 py-2 rounded-xl bg-stone-200 text-stone-800 font-black text-lg active:scale-95">重設</button>
+          </div>
         </div>
       </div>
 
@@ -564,13 +793,33 @@
         <!-- 食材 Checkbox 圖示列表 -->
         <div id="detailIngredientsList" class="divide-y-2 divide-stone-200 border-2 border-stone-300 rounded-2xl overflow-hidden bg-cream"></div>
 
+        <!-- 菜市場挑菜＆紅白塑膠袋保鮮微錦囊 -->
+        <div id="detailStorageHackCard" class="bg-amber-50 border-3 border-amber-500 rounded-2xl p-4 space-y-2">
+          <div class="flex items-center gap-2 text-stone-900 font-black text-xl">
+            <span>💡</span>
+            <span>菜市場阿婆級挑菜＆塑膠袋保鮮妙招：</span>
+          </div>
+          <p id="detailStorageHackText" class="text-lg sm:text-xl text-stone-700 font-bold leading-relaxed">
+            買回來的食材別直接把紅白塑膠袋悶死！葉菜先墊廚房紙巾吸水氣，瓜果頭尾粗細勻稱最嫩。
+          </p>
+        </div>
+
         <!-- 綠色高對比大按鈕：一鍵傳送到 LINE 備忘 -->
         <button
           onclick="shareIngredientsToLine()"
           class="w-full py-5 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05a847] active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-green-900"
         >
           <span class="text-3xl">🟢</span>
-          <span>一鍵傳送到 LINE 備忘</span>
+          <span>一鍵傳送買菜清單到 LINE</span>
+        </button>
+
+        <!-- 橘色大按鈕：傳送今晚菜單投票/預告到家族群組 -->
+        <button
+          onclick="shareDinnerPollToLine()"
+          class="w-full py-5 px-6 rounded-2xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-2xl sm:text-3xl shadow-lg flex items-center justify-center gap-3 border-4 border-amber-900"
+        >
+          <span class="text-3xl">📣</span>
+          <span>傳送晚餐預告到家族 LINE 群組</span>
         </button>
       </div>
 
@@ -610,6 +859,143 @@
 
   </main>
 
+
+  <!-- ================= 彈窗 A：👵 家族手路菜記憶典藏 (代代相傳家傳菜) ================= -->
+  <div id="familyHeritageModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-amber-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-extrabold text-[#9A3412] flex items-center gap-2">
+          <span>👵</span> 家族手路菜典藏
+        </h3>
+        <button onclick="closeModal('familyHeritageModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
+      </div>
+
+      <p class="text-xl text-stone-700 font-bold leading-relaxed">
+        錄下阿嬤、媽媽或您自己的私房料理口述（例如：「黑麻油煸老薑要煸到微捲、醬油黑白淋一圈」），系統自動轉化為專屬家傳食譜！
+      </p>
+
+      <!-- 輸入區塊 -->
+      <div class="space-y-3 bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+        <div>
+          <label class="block text-xl font-black text-stone-900 mb-1" for="heritageTitleInput">
+            🍳 料理名稱（如：阿嬤的黑麻油三杯雞）：
+          </label>
+          <input
+            id="heritageTitleInput"
+            type="text"
+            placeholder="請輸入菜名..."
+            class="w-full text-xl font-bold p-3 rounded-xl border-2 border-stone-300 bg-white"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xl font-black text-stone-900 mb-1" for="heritageNotesInput">
+            🎙️ 口述或隨手記下料理精髓與調味秘訣：
+          </label>
+          <textarea
+            id="heritageNotesInput"
+            rows="4"
+            placeholder="例如：雞肉先川燙擦乾，一定要用黑麻油小火煸老薑片，煸到兩邊捲捲的才香！倒米酒一碗、醬油半碗、冰糖一小把，小火悶煮20分鐘，起鍋抓一把九層塔悶10秒..."
+            class="w-full text-xl font-bold p-3 rounded-xl border-2 border-stone-300 bg-white leading-relaxed"
+          ></textarea>
+        </div>
+
+        <button
+          type="button"
+          id="heritageVoiceDictateBtn"
+          onclick="toggleHeritageVoiceDictation()"
+          class="w-full py-3.5 bg-amber-700 hover:bg-amber-800 text-white font-black text-xl rounded-2xl flex items-center justify-center gap-2 border-3 border-amber-950 active:scale-95"
+        >
+          <span id="heritageVoiceIcon">🎙️</span>
+          <span id="heritageVoiceText">按此開口唸給手機記</span>
+        </button>
+
+        <button
+          type="button"
+          onclick="saveHeritageRecipeFromForm()"
+          class="w-full py-4 bg-[#15803D] hover:bg-emerald-800 text-white font-black text-2xl rounded-2xl shadow-lg border-3 border-green-950 active:scale-95"
+        >
+          💾 永久典藏為家族手路菜
+        </button>
+      </div>
+
+      <!-- 已典藏列表 -->
+      <div class="space-y-3 pt-2">
+        <h4 class="text-2xl font-black text-stone-900 flex items-center gap-2">
+          <span>🏆</span> 我家已典藏的私房手路菜：
+        </h4>
+        <div id="heritageListContainer" class="space-y-3">
+          <!-- 動態載入 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 彈窗 B：🔄 一食材變三餐（好市多／大包裝食材鍊金術） ================= -->
+  <div id="mealAlchemyModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-amber-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-extrabold text-[#9A3412] flex items-center gap-2">
+          <span>🔄</span> 一材變三餐・食材鍊金術
+        </h3>
+        <button onclick="closeModal('mealAlchemyModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
+      </div>
+
+      <p class="text-xl text-stone-700 font-bold leading-relaxed">
+        去菜市場買了一大條五花肉或整隻土雞吃不完？點選大包裝食材，AI 幫您排出<strong>「買一次、連續三天不同菜色」</strong>的家庭連環菜單！
+      </p>
+
+      <!-- 4 大食材選擇鈕 -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <button type="button" onclick="renderAlchemyPlan('pork')" data-alchemy="pork" class="alchemy-select-btn p-3 rounded-2xl border-3 border-amber-600 bg-amber-50 text-[#7C2D12] font-black text-xl flex flex-col items-center gap-1 active:scale-95">
+          <span class="text-4xl">🥩</span>
+          <span>大條帶皮五花肉</span>
+        </button>
+        <button type="button" onclick="renderAlchemyPlan('chicken')" data-alchemy="chicken" class="alchemy-select-btn p-3 rounded-2xl border-3 border-stone-300 bg-white text-stone-800 font-black text-xl flex flex-col items-center gap-1 active:scale-95">
+          <span class="text-4xl">🍗</span>
+          <span>市場整隻大土雞</span>
+        </button>
+        <button type="button" onclick="renderAlchemyPlan('cabbage')" data-alchemy="cabbage" class="alchemy-select-btn p-3 rounded-2xl border-3 border-stone-300 bg-white text-stone-800 font-black text-xl flex flex-col items-center gap-1 active:scale-95">
+          <span class="text-4xl">🥬</span>
+          <span>一整大顆高麗菜</span>
+        </button>
+        <button type="button" onclick="renderAlchemyPlan('minced_pork')" data-alchemy="minced_pork" class="alchemy-select-btn p-3 rounded-2xl border-3 border-stone-300 bg-white text-stone-800 font-black text-xl flex flex-col items-center gap-1 active:scale-95">
+          <span class="text-4xl">🧆</span>
+          <span>大包豬絞肉</span>
+        </button>
+      </div>
+
+      <!-- 3 天連環菜單展示區 -->
+      <div id="alchemyPlanResult" class="space-y-3 bg-amber-50 p-4 rounded-2xl border-2 border-amber-400">
+        <!-- 動態渲染 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 彈窗 C：⚡ 30分鐘三菜一湯平行開飯指揮官 ================= -->
+  <div id="parallelCookModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-amber-900 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-3xl font-extrabold text-[#9A3412] flex items-center gap-2">
+          <span>⚡</span> 30分鐘三菜一湯指揮官
+        </h3>
+        <button onclick="closeModal('parallelCookModal')" class="text-3xl font-black px-3 py-1 bg-stone-200 rounded-xl">✕</button>
+      </div>
+
+      <p class="text-xl text-stone-700 font-bold leading-relaxed">
+        雙口瓦斯爐 ＋ 大同電鍋完美連動！一次備料不洗兩次砧板，<strong>30 分鐘整，三菜一湯熱騰騰同時端上桌！</strong>
+      </p>
+
+      <!-- 排程時間軸 -->
+      <div id="parallelTimelineContainer" class="space-y-3.5">
+        <!-- 動態渲染 -->
+      </div>
+
+      <button type="button" onclick="closeModal('parallelCookModal')" class="w-full py-4 bg-stone-800 text-white font-black text-2xl rounded-2xl shadow active:scale-95">
+        關閉排程視窗
+      </button>
+    </div>
+  </div>
 
   <!-- ================= 彈窗 1：加入手機桌面教學（Android & iPhone 雙支援） ================= -->
   <div id="iosGuideModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
@@ -774,7 +1160,8 @@
     let enteredPin = '';
 
     function checkFamilyPinAuth() {
-      const isAuth = localStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN;
+      const isAuth = localStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN ||
+                     sessionStorage.getItem(PIN_STORAGE_KEY) === 'VERIFIED_' + CORRECT_FAMILY_PIN;
       const overlay = document.getElementById('familyPinOverlay');
       if (overlay) {
         if (isAuth) {
@@ -858,6 +1245,887 @@
       checkFamilyPinAuth();
     }
 
+    // =========================================================================
+    // 【野心升級 1】字級縮放控制器 (標準 22px / 放大 26px / 特大 30px)
+    // =========================================================================
+    const FONT_LEVELS = ['standard', 'large', 'xlarge'];
+    const FONT_LEVEL_NAMES = { standard: '標準', large: '放大', xlarge: '特大' };
+    let currentFontIdx = 0;
+
+    function initFontSize() {
+      const saved = localStorage.getItem('SENIOR_MEAL_FONT_SIZE') || 'standard';
+      currentFontIdx = Math.max(0, FONT_LEVELS.indexOf(saved));
+      applyCurrentFontSize();
+    }
+
+    function cycleFontSize() {
+      currentFontIdx = (currentFontIdx + 1) % FONT_LEVELS.length;
+      localStorage.setItem('SENIOR_MEAL_FONT_SIZE', FONT_LEVELS[currentFontIdx]);
+      applyCurrentFontSize();
+    }
+
+    function applyCurrentFontSize() {
+      const level = FONT_LEVELS[currentFontIdx];
+      document.documentElement.classList.remove('font-standard', 'font-large', 'font-xlarge');
+      document.documentElement.classList.add('font-' + level);
+      const lbl = document.getElementById('fontSizeLabel');
+      if (lbl) lbl.textContent = FONT_LEVEL_NAMES[level];
+    }
+
+    // =========================================================================
+    // 【野心升級 2】在地節氣與微氣候即時感知推薦引擎 (24 節氣對齊台灣時令)
+    // =========================================================================
+    function getTaiwanSolarTerm(month, day) {
+      const terms = {
+        1: day < 19 ? { name: '小寒', emoji: '❄️', advice: '冬令進補溫補，吃老薑黑麻油、山藥排骨暖胃！', produce: '白蘿蔔,山藥,五花肉' } : { name: '大寒', emoji: '⛄', advice: '歲末驅寒健脾，吃熱騰騰酸菜白肉、芥菜煲！', produce: '芥菜,排骨,蒜苗' },
+        2: day < 19 ? { name: '立春', emoji: '🌱', advice: '大地回春，多吃綠色蔬菜、芹菜與洋蔥養肝護陽！', produce: '菠菜,高麗菜,雞蛋' } : { name: '雨水', emoji: '🌧️', advice: '初春濕氣起，宜健脾去濕，喝絲瓜蛤蜊湯、清炒時蔬！', produce: '地瓜葉,絲瓜,雞腿' },
+        3: day < 20 ? { name: '驚蟄', emoji: '⚡', advice: '春雷初響，宜清溫平補，多吃蒜頭、木耳增強體力！', produce: '木耳,青江菜,魚肉' } : { name: '春分', emoji: '🌸', advice: '陰陽平衡，宜甘溫少酸，吃嫩豆腐、鮮蝦與鮮筍！', produce: '嫩豆腐,白蝦,鮮筍' },
+        4: day < 20 ? { name: '清明', emoji: '🌿', advice: '時令溫潤，宜疏肝清熱，吃地瓜葉、高麗菜、鱸魚湯！', produce: '鮮魚,地瓜葉,雞肉' } : { name: '穀雨', emoji: '🌾', advice: '雨生百穀，宜去濕暖胃，多吃薑黃、南瓜與洋蔥！', produce: '南瓜,洋蔥,玉米' },
+        5: day < 21 ? { name: '立夏', emoji: '☀️', advice: '夏日初至，宜養心護火，吃涼拌小黃瓜、苦瓜退火！', produce: '小黃瓜,苦瓜,番茄' } : { name: '小滿', emoji: '🌾', advice: '氣候悶熱，多吃清淡冬瓜、絲瓜蛤蜊清心解暑！', produce: '冬瓜,絲瓜,蛤蜊' },
+        6: day < 21 ? { name: '芒種', emoji: '🍉', advice: '梅雨季濕熱，宜健脾化濕，吃綠豆、苦瓜排骨湯！', produce: '苦瓜,竹筍,排骨' } : { name: '夏至', emoji: '🌞', advice: '日照最長，宜消暑生津，多吃番茄炒蛋、金沙絲瓜！', produce: '番茄,雞蛋,絲瓜' },
+        7: day < 23 ? { name: '小暑', emoji: '🍧', advice: '盛夏伏天，宜補水清淡，吃涼拌茄子、冬瓜蛤蜊消暑！', produce: '冬瓜,茄子,白蝦' } : { name: '大暑', emoji: '🔥', advice: '一年中最熱，宜清暑解毒，吃鳳梨苦瓜雞退火生津！', produce: '白玉苦瓜,鮮魚,豆腐' },
+        8: day < 23 ? { name: '立秋', emoji: '🍂', advice: '涼風漸至，宜潤燥滋陰，吃洋蔥燉肉、山藥排骨！', produce: '南瓜,洋蔥,五花肉' } : { name: '處暑', emoji: '🍁', advice: '暑熱退散，早晚涼爽，多吃絲瓜、玉米、清蒸鮮魚！', produce: '玉米,鱸魚,高麗菜' },
+        9: day < 23 ? { name: '白露', emoji: '💧', advice: '秋風起露水涼，宜補氣潤肺，喝蓮藕排骨、百合雞湯！', produce: '排骨,山藥,玉米' } : { name: '秋分', emoji: '🌾', advice: '晝夜均平，宜滋潤防秋燥，多吃香菇、南瓜與水梨！', produce: '香菇,南瓜,雞腿' },
+        10: day < 23 ? { name: '寒露', emoji: '🌰', advice: '深秋轉冷，宜暖胃健脾，吃麻油煎蛋、蒜苗炒臘肉！', produce: '蒜苗,雞蛋,梅花肉' } : { name: '霜降', emoji: '🍁', advice: '補冬不如補霜降，吃白蘿蔔、高麗菜、燉牛肉最滋補！', produce: '白蘿蔔,牛肉,高麗菜' },
+        11: day < 22 ? { name: '立冬', emoji: '🍂', advice: '立冬溫補不燥熱！盛產菜頭、大菜（芥菜）、老薑暖身！', produce: '白蘿蔔,芥菜,五花肉' } : { name: '小雪', emoji: '❄️', advice: '天寒氣清，宜溫補氣血，吃黑麻油三杯雞、客家封肉！', produce: '雞肉,五花肉,老薑' },
+        12: day < 22 ? { name: '大雪', emoji: '🍲', advice: '隆冬進補，宜溫胃散寒，吃客家福菜肉片湯、蒜頭蛤蜊雞湯！', produce: '福菜,排骨,蒜頭' } : { name: '冬至', emoji: '🥣', advice: '冬至迎新，全家吃暖呼呼砂鍋魚頭、古早味滷肉燥！', produce: '鮮魚,五花肉,大菜' }
+      };
+      return terms[month] || terms[11];
+    }
+
+    function initSolarTermBanner(targetMonth) {
+      const now = new Date();
+      const m = targetMonth || (now.getMonth() + 1);
+      const d = targetMonth ? 15 : now.getDate();
+      const st = getTaiwanSolarTerm(m, d);
+
+      const emojiEl = document.getElementById('solarTermEmoji');
+      const badgeEl = document.getElementById('solarTermBadge');
+      const dateEl = document.getElementById('solarTermDate');
+      const titleEl = document.getElementById('solarTermTitle');
+      const descEl = document.getElementById('solarTermDescription');
+
+      if (emojiEl) emojiEl.textContent = st.emoji;
+      if (badgeEl) badgeEl.textContent = '時令節氣【' + st.name + '】';
+      if (dateEl) dateEl.textContent = m + '月' + (targetMonth ? '時令節氣' : d + '日') + '在地時令指南';
+      if (titleEl) titleEl.textContent = st.name + '時序：' + st.advice;
+      if (descEl) descEl.textContent = '🌾 台灣當令盛產推薦：' + st.produce + '。一鍋煮透，老少兼顧又省荷包！';
+    }
+
+    function quickFilterSolarTerm(term) {
+      document.getElementById('ingredientInput').value = term;
+      handleIngredientInputChange();
+      scrollToRecipes();
+    }
+
+    // =========================================================================
+    // 【野心升級 3】家人特別照顧模式 (4 大情境過濾)
+    // =========================================================================
+    let activeCareMode = null;
+
+    const CARE_MODE_CONFIG = {
+      exam: {
+        label: '🎓 考前衝刺補腦',
+        tags: ['#考前補腦', '#高蛋白', '#白飯殺手', '#小孩超愛淋飯', '#小孩長輩搶著夾'],
+        keywords: ['鮭魚', '鱸魚', '雞蛋', '嫩豆腐', '蛤蜊', '白蝦'],
+        msg: '為考生挑選高 DHA 深海魚、卵磷脂雞蛋豆腐與低升糖蛋白質，提神醒腦不打瞌睡！'
+      },
+      comfort: {
+        label: '🤧 換季溫補養胃',
+        tags: ['#換季溫補', '#暖心靚湯', '#退火補元氣', '#清甜養胃'],
+        keywords: ['白蘿蔔', '老薑', '雞腿', '排骨', '絲瓜', '香菇', '福菜'],
+        msg: '早晚溫差大！挑選溫潤去燥燉湯、老薑黑麻油、清蒸鱸魚與軟甜白蘿蔔，保護全家呼吸道！'
+      },
+      soft: {
+        label: '🦷 長輩幼兒極軟',
+        tags: ['#牙口軟嫩', '#極軟好咬', '#入口即化', '#長輩好咬', '#冬粉滑順好入口'],
+        keywords: ['嫩豆腐', '冬粉', '茄子', '蒸蛋', '絲瓜', '絞肉', '魚片'],
+        msg: '免咀嚼、入口即化！挑選吸滿湯汁的冬粉、蒸豆腐、鮮甜瓜果與細嫩魚片，牙口輕鬆無負擔！'
+      },
+      beauty: {
+        label: '✨ 主婦凍齡輕盈',
+        tags: ['#低油抗老', '#少油清爽', '#高纖消水腫', '#全家必備青菜', '#年節少油煙'],
+        keywords: ['地瓜葉', '黑木耳', '鮭魚', '花椰菜', '番茄', '苦瓜', '櫻花蝦'],
+        msg: '媽媽與美魔女主人的凍齡餐桌！少油煙、高抗氧化植化素、高纖木耳與膠原白肉，輕盈健康！'
+      }
+    };
+
+    function toggleCareMode(mode) {
+      if (activeCareMode === mode) {
+        clearCareMode();
+        return;
+      }
+      activeCareMode = mode;
+      document.querySelectorAll('.care-btn').forEach(btn => {
+        if (btn.dataset.care === mode) {
+          btn.className = 'care-btn py-3 px-2 rounded-2xl border-4 border-[#9A3412] bg-[#9A3412] text-white font-black text-xl flex flex-col items-center gap-1 shadow-md scale-102 transition';
+          btn.querySelector('.text-stone-500')?.classList.replace('text-stone-500', 'text-amber-200');
+        } else {
+          btn.className = 'care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition';
+          btn.querySelector('.text-amber-200')?.classList.replace('text-amber-200', 'text-stone-500');
+        }
+      });
+
+      const clearBtn = document.getElementById('clearCareModeBtn');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+
+      renderRecipeList();
+    }
+
+    function clearCareMode() {
+      activeCareMode = null;
+      document.querySelectorAll('.care-btn').forEach(btn => {
+        btn.className = 'care-btn py-3 px-2 rounded-2xl border-3 border-stone-300 bg-warmCard text-stone-800 font-extrabold text-xl flex flex-col items-center gap-1 active:scale-95 transition';
+        btn.querySelector('.text-amber-200')?.classList.replace('text-amber-200', 'text-stone-500');
+      });
+      const clearBtn = document.getElementById('clearCareModeBtn');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      renderRecipeList();
+    }
+
+    // =========================================================================
+    // 【野心升級 4】台客雙聲道食材字典與口述清冰箱 (Normalizer)
+    // =========================================================================
+    const DIALECT_INGREDIENT_MAP = {
+      // 台語 (閩南語)
+      '菜瓜': '絲瓜', '刺瓜仔': '大黃瓜', '刺瓜': '小黃瓜', '菜頭': '白蘿蔔', '金瓜': '南瓜',
+      '二層肉': '梅花肉片', '離緣肉': '梅花肉片', '三層肉': '五花肉', '隔間肉': '梅花肉片',
+      '肝連': '梅花肉片', '尾冬骨': '排骨', '小排': '排骨', '肉絲': '梅花肉片', '豬肉絲': '梅花肉片',
+      '雞角肉': '雞腿', '卵': '雞蛋', '魚仔': '鮮魚', '蝦仔': '白蝦', '海瓜子': '蛤蜊',
+      '菜脯': '白蘿蔔/菜脯', '薑母': '老薑', '蒜仔': '青蔥/蒜苗', '芫荽': '香菜', '柑仔蜜': '番茄',
+      '臭柿仔': '番茄', '冬粉仔': '冬粉/粉絲', '塗豆': '花生', '刈菜': '芥菜', '長年菜': '芥菜',
+      '破布子': '破布子', '甘樹子': '破布子',
+      // 客家話 (四縣/海陸)
+      '大菜': '芥菜', '覆菜': '福菜', '福菜': '福菜', '鹹菜': '酸菜', '梅干菜': '梅干菜',
+      '鹹菜乾': '梅干菜', '面帕粄': '粄條', '粄條': '冬粉/粉絲', '客家封肉': '五花肉',
+      '封肉': '五花肉', '鹹豬肉': '客家鹹豬肉', '桔醬': '客家桔醬', '狗貼耳': '魚腥草'
+    };
+
+    function normalizeDialectText(rawText) {
+      let text = rawText;
+      let detectedDialects = [];
+      for (const [dialectWord, standardWord] of Object.entries(DIALECT_INGREDIENT_MAP)) {
+        if (text.includes(dialectWord)) {
+          detectedDialects.push(dialectWord + '➔' + standardWord);
+          text = text.split(dialectWord).join(standardWord);
+        }
+      }
+      return { text, detectedDialects };
+    }
+
+    // =========================================================================
+    // 【野心升級 5】菜市場挑菜＆紅白塑膠袋保鮮微錦囊
+    // =========================================================================
+    const INGREDIENT_STORAGE_HACKS = {
+      '高麗菜': {
+        market: '拿起來沉甸甸、葉球緊實、切口潔白者甜度最高。',
+        storage: '紅白塑膠袋別悶死！塑膠袋內放一張摺疊廚房紙巾吸附水氣，切開處貼保鮮膜，常保清脆兩週！'
+      },
+      '絲瓜': {
+        market: '拿起來沉重、頭尾粗細勻稱、表皮微粗糙者最鮮嫩多汁。',
+        storage: '沒煮完別直接悶塑膠袋！先用報紙或廚房紙巾包裹吸濕，再套入塑膠袋冷藏，可多放一週不黑爛！'
+      },
+      '白蘿蔔': {
+        market: '表皮光滑無裂、沉甸甸、敲擊聲音清脆結實最清甜無渣。',
+        storage: '買回家先把綠色蘿蔔葉切掉（防止養分水分流失），用保鮮膜或紙巾包覆冷藏可放整月！'
+      },
+      '五花肉': {
+        market: '肥瘦三至五層分明、肉色鮮粉紅、按壓有彈性無異味。',
+        storage: '買回來分切成餐用大小，用夾鏈袋裝好壓平冷凍，每餐只退冰當餐份量！'
+      },
+      '雞腿': {
+        market: '表皮微黃有光澤、肉質緊實有彈性、無多餘滲血水。',
+        storage: '用清水沖淨後用廚房紙巾徹底吸乾血水，再包入密封袋冷凍，退冰後肉質不柴！'
+      },
+      '蛤蜊': {
+        market: '殼緊閉、互碰聲音清脆硬實；微開伸出舌頭一碰立即縮回者最生猛。',
+        storage: '吐沙瀝乾後裝入塑膠袋吹氣膨脹綁緊（充氣保鮮），冷藏可多活 2～3 天！'
+      },
+      '雞蛋': {
+        market: '蛋殼表面微粗糙無裂痕、拿在手中有重量感。',
+        storage: '尖頭朝下、圓頭朝上擺放（氣室在上方），不要水洗直接放冷藏最保鮮！'
+      },
+      '芥菜': {
+        market: '客家俗稱「大菜」，葉梗肥厚、葉色翠綠微帶白粉者最甘甜。',
+        storage: '包入報紙吸附濕氣再套上塑膠袋，直立擺放在冰箱蔬果室，放 10 天依然挺脆！'
+      },
+      '豆腐': {
+        market: '傳統市場板豆腐聞起來有天然黃豆清香、表面無滑膩感。',
+        storage: '泡入乾淨冷開水中加半小匙鹽巴放冷藏，每天換水可保鮮 4～5 天不發酸！'
+      }
+    };
+
+    // =========================================================================
+    // 【野心升級 6】動態一鍋老少三段式時序解構計算
+    // =========================================================================
+    function getRecipeMultiGenTimeline(recipe) {
+      if (recipe.multiGenTimeline) {
+        return recipe.multiGenTimeline;
+      }
+      const isSoup = recipe.mealSlot === '暖心靚湯' || recipe.cookingMethod === '燉煮／煲湯';
+      if (isSoup) {
+        return {
+          stage1: '👶👵【幼兒長輩先行】：湯滾食材熟透後，先舀出 1 碗軟嫩燉肉與軟甜蔬菜（湯頭鮮甘清淡、零胡椒少鹽）。',
+          stage2: '🎒【學童便當／下飯】：肉塊充分吸飽甘甜湯汁，撈取便當菜肉與拌飯高湯！',
+          stage3: '🌶️【成人暖身提味】：最後在鍋中撒入適量白胡椒粉、香菜或芹菜末，大火滾 10 秒，辛香回甘！'
+        };
+      } else {
+        return {
+          stage1: '👶👵【幼兒長輩先行】：食材炒熟加少許熱水悶至軟嫩，在下辣椒、胡椒與重醬前，先用剪刀剪小段盛起 1 碗無辣低鈉份量！',
+          stage2: '🎒【學童便當／下飯】：下醬油膏、番茄醬或甜鹹醬汁翻炒均勻，撈取便當與小朋友拌飯的最愛份量！',
+          stage3: '🌶️【大人嗆香收汁】：轉大火投新鮮辣椒片、九層塔或沙茶，大火翻炒 15 秒嗆香收濃汁起鍋！'
+        };
+      }
+    }
+
+    // =========================================================================
+    // 【野心升級 7】廚房「隱形隨侍」阿妹仔語音助手 ＋ 大字計時器 ＋ Web Audio Chime
+    // =========================================================================
+    let isCoPilotListening = false;
+    let coPilotRecognition = null;
+    let kitchenTimerSeconds = 300;
+    let kitchenTimerInterval = null;
+    let isKitchenTimerRunning = false;
+    let coPilotStepIdx = 0;
+
+    function parseVoiceTimerMinutes(text) {
+      if (!text) return 5;
+      if (text.includes('半小時')) return 30;
+      if (text.includes('一小時')) return 60;
+
+      const digitMatch = text.match(/(\d+)\s*(分鐘|分)?/);
+      if (digitMatch) {
+        return parseInt(digitMatch[1], 10);
+      }
+
+      const cnNums = {
+        '半': 0.5, '一': 1, '兩': 2, '二': 2, '三': 3, '四': 4,
+        '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10
+      };
+
+      const m = text.match(/(?:計時)?([零一兩二三四五六七八九十百]+)\s*(?:分鐘|分)?/);
+      if (m && m[1]) {
+        const raw = m[1];
+        if (raw === '十') return 10;
+        if (raw.startsWith('十')) {
+          return 10 + (cnNums[raw[1]] || 0);
+        }
+        if (raw.endsWith('十')) {
+          return (cnNums[raw[0]] || 1) * 10;
+        }
+        if (raw.length === 3 && raw[1] === '十') {
+          return (cnNums[raw[0]] || 1) * 10 + (cnNums[raw[2]] || 0);
+        }
+        if (cnNums[raw] !== undefined) {
+          return cnNums[raw];
+        }
+      }
+      return 5;
+    }
+
+    function highlightCoPilotStep(idx) {
+      document.querySelectorAll('.detail-step-card').forEach((card, i) => {
+        const badge = card.querySelector('.step-num-badge');
+        if (i === idx) {
+          card.classList.add('ring-4', 'ring-amber-500', 'bg-amber-100', 'scale-[1.01]', 'border-[#9A3412]');
+          card.classList.remove('border-amber-800/40', 'bg-warmCard');
+          if (badge) badge.classList.add('animate-bounce');
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          card.classList.remove('ring-4', 'ring-amber-500', 'bg-amber-100', 'scale-[1.01]', 'border-[#9A3412]');
+          card.classList.add('border-amber-800/40', 'bg-warmCard');
+          if (badge) badge.classList.remove('animate-bounce');
+        }
+      });
+    }
+
+    function stopKitchenCoPilot() {
+      if (coPilotRecognition) {
+        try { coPilotRecognition.stop(); } catch(e){}
+      }
+      isCoPilotListening = false;
+      const btn = document.getElementById('kitchenCoPilotBtn');
+      const btnText = document.getElementById('copilotBtnText');
+      const btnIcon = document.getElementById('copilotBtnIcon');
+      const liveStatus = document.getElementById('copilotLiveStatus');
+      if (btn) btn.classList.remove('mic-breath-active');
+      if (btnIcon) btnIcon.textContent = '🎙️';
+      if (btnText) btnText.textContent = '開啟語音免觸控';
+      if (liveStatus) liveStatus.classList.add('hidden');
+      highlightCoPilotStep(-1);
+    }
+
+    function toggleKitchenCoPilot() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const btn = document.getElementById('kitchenCoPilotBtn');
+      const btnText = document.getElementById('copilotBtnText');
+      const btnIcon = document.getElementById('copilotBtnIcon');
+      const liveStatus = document.getElementById('copilotLiveStatus');
+
+      if (!SpeechRecognition) {
+        alert('您的瀏覽器不支援自動語音隨侍，請點擊「唸步驟給我聽」朗讀步驟！');
+        return;
+      }
+
+      if (isCoPilotListening) {
+        stopKitchenCoPilot();
+        speakStepText('廚房隨侍已暫停');
+        return;
+      }
+
+      coPilotRecognition = new SpeechRecognition();
+      coPilotRecognition.lang = 'zh-TW';
+      coPilotRecognition.continuous = true;
+      coPilotRecognition.interimResults = false;
+
+      coPilotRecognition.onstart = () => {
+        isCoPilotListening = true;
+        btn.classList.add('mic-breath-active');
+        btnIcon.textContent = '🛑';
+        btnText.textContent = '阿妹仔聽命中...';
+        liveStatus.classList.remove('hidden');
+        liveStatus.textContent = '👂 廚房隨侍中！開口說：「下一步」、「上一步」、「從頭」、「計時5分鐘」...';
+        if (!wakeLockSentinel) toggleWakeLock();
+
+        // 啟動時主動朗讀第 1 步並高亮步驟卡
+        if (currentRecipe && currentRecipe.steps && currentRecipe.steps.length > 0) {
+          coPilotStepIdx = 0;
+          highlightCoPilotStep(0);
+          speakStepText('阿妹仔來隨侍囉！第 1 步：' + currentRecipe.steps[0]);
+        }
+      };
+
+      coPilotRecognition.onresult = (e) => {
+        const lastResult = e.results[e.results.length - 1][0].transcript.trim();
+        liveStatus.textContent = '👂 聽到了指令：「' + lastResult + '」';
+
+        if (lastResult.includes('下一步') || lastResult.includes('下一個')) {
+          if (currentRecipe && coPilotStepIdx < currentRecipe.steps.length - 1) {
+            coPilotStepIdx++;
+            highlightCoPilotStep(coPilotStepIdx);
+            speakStepText('第 ' + (coPilotStepIdx + 1) + ' 步：' + currentRecipe.steps[coPilotStepIdx]);
+          } else {
+            speakStepText('已經是最後一步囉，準備盛盤上桌！');
+          }
+        } else if (lastResult.includes('上一步') || lastResult.includes('上一個')) {
+          if (coPilotStepIdx > 0) {
+            coPilotStepIdx--;
+            highlightCoPilotStep(coPilotStepIdx);
+            speakStepText('回到第 ' + (coPilotStepIdx + 1) + ' 步：' + currentRecipe.steps[coPilotStepIdx]);
+          } else {
+            speakStepText('這是第一步囉！' + (currentRecipe ? currentRecipe.steps[0] : ''));
+          }
+        } else if (lastResult.includes('第一步') || lastResult.includes('從頭') || lastResult.includes('開始')) {
+          coPilotStepIdx = 0;
+          highlightCoPilotStep(0);
+          if (currentRecipe && currentRecipe.steps && currentRecipe.steps[0]) {
+            speakStepText('從頭開始，第 1 步：' + currentRecipe.steps[0]);
+          }
+        } else if (lastResult.includes('重唸') || lastResult.includes('再一次') || lastResult.includes('再唸')) {
+          highlightCoPilotStep(coPilotStepIdx);
+          if (currentRecipe && currentRecipe.steps && currentRecipe.steps[coPilotStepIdx]) {
+            speakStepText('第 ' + (coPilotStepIdx + 1) + ' 步：' + currentRecipe.steps[coPilotStepIdx]);
+          }
+        } else if (lastResult.includes('計時')) {
+          const mins = parseVoiceTimerMinutes(lastResult);
+          kitchenTimerSeconds = mins * 60;
+          updateKitchenTimerDisplay();
+          startKitchenTimer();
+          speakStepText('好的，幫您計時 ' + mins + ' 分鐘，開始倒數！');
+        } else if (lastResult.includes('停止計時') || lastResult.includes('暫停計時')) {
+          pauseKitchenTimer();
+          speakStepText('計時器已暫停');
+        } else if (lastResult.includes('關閉隨侍') || lastResult.includes('退出隨侍') || lastResult.includes('不要聽了')) {
+          stopKitchenCoPilot();
+          speakStepText('阿妹仔先退下囉，祝您料理愉快！');
+        }
+      };
+
+      coPilotRecognition.onerror = () => {
+        liveStatus.textContent = '💡 廚房環境吵雜時，也可直接點按鈕操作喔！';
+      };
+
+      coPilotRecognition.onend = () => {
+        if (isCoPilotListening) {
+          try { coPilotRecognition.start(); } catch(err){}
+        }
+      };
+
+      coPilotRecognition.start();
+    }
+
+    function speakStepText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-TW';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+
+    function updateKitchenTimerDisplay() {
+      const m = Math.floor(kitchenTimerSeconds / 60);
+      const s = kitchenTimerSeconds % 60;
+      const str = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      const el = document.getElementById('kitchenTimerDisplay');
+      if (el) el.textContent = str;
+    }
+
+    function adjustKitchenTimer(mins) {
+      kitchenTimerSeconds += mins * 60;
+      updateKitchenTimerDisplay();
+    }
+
+    function resetKitchenTimer() {
+      pauseKitchenTimer();
+      kitchenTimerSeconds = 300;
+      updateKitchenTimerDisplay();
+      const btn = document.getElementById('kitchenTimerToggleBtn');
+      if (btn) {
+        btn.textContent = '▶️ 開始計時';
+        btn.className = 'px-4 py-2 rounded-xl bg-emerald-700 text-white font-black text-xl border-2 border-emerald-950 active:scale-95 shadow';
+      }
+    }
+
+    function toggleKitchenTimer() {
+      if (isKitchenTimerRunning) {
+        pauseKitchenTimer();
+      } else {
+        startKitchenTimer();
+      }
+    }
+
+    function startKitchenTimer() {
+      if (isKitchenTimerRunning) return;
+      isKitchenTimerRunning = true;
+      const btn = document.getElementById('kitchenTimerToggleBtn');
+      if (btn) {
+        btn.textContent = '⏸️ 暫停計時';
+        btn.className = 'px-4 py-2 rounded-xl bg-amber-600 text-white font-black text-xl border-2 border-amber-950 active:scale-95 shadow';
+      }
+      kitchenTimerInterval = setInterval(() => {
+        if (kitchenTimerSeconds > 0) {
+          kitchenTimerSeconds--;
+          updateKitchenTimerDisplay();
+        } else {
+          pauseKitchenTimer();
+          playKitchenChime();
+          speakStepText('時間到囉！請檢查鍋中火候，準備進行下一步！');
+          alert('🔔 料理時間到囉！請檢查鍋中火候！');
+        }
+      }, 1000);
+    }
+
+    function pauseKitchenTimer() {
+      isKitchenTimerRunning = false;
+      clearInterval(kitchenTimerInterval);
+      kitchenTimerInterval = null;
+      const btn = document.getElementById('kitchenTimerToggleBtn');
+      if (btn) {
+        btn.textContent = '▶️ 繼續計時';
+        btn.className = 'px-4 py-2 rounded-xl bg-emerald-700 text-white font-black text-xl border-2 border-emerald-950 active:scale-95 shadow';
+      }
+    }
+
+    function playKitchenChime() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const playTone = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + duration);
+        };
+        playTone(587.33, 0, 0.35);
+        playTone(880.00, 0.2, 0.4);
+        playTone(1174.66, 0.4, 0.6);
+      } catch(e){}
+    }
+
+    // =========================================================================
+    // 【野心升級 8】家族手路菜記憶典藏 (Family Heritage Engine)
+    // =========================================================================
+    const HERITAGE_STORAGE_KEY = 'FAMILY_HERITAGE_RECIPES_V1';
+
+    function getHeritageRecipes() {
+      try {
+        const raw = localStorage.getItem(HERITAGE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHeritageRecipe(recipe) {
+      const list = getHeritageRecipes();
+      list.unshift(recipe);
+      localStorage.setItem(HERITAGE_STORAGE_KEY, JSON.stringify(list));
+      loadHeritageRecipesToAll();
+      renderHeritageListModal();
+      renderRecipeList();
+    }
+
+    function deleteHeritageRecipe(id) {
+      if (!confirm('確定要刪除這道私房手路菜嗎？')) return;
+      let list = getHeritageRecipes();
+      list = list.filter(r => r.id !== id);
+      localStorage.setItem(HERITAGE_STORAGE_KEY, JSON.stringify(list));
+      loadHeritageRecipesToAll();
+      renderHeritageListModal();
+      renderRecipeList();
+    }
+
+    function loadHeritageRecipesToAll() {
+      const heritage = getHeritageRecipes();
+      allRecipes = [...heritage, ...BUILTIN_RECIPES];
+    }
+
+    function renderHeritageListModal() {
+      const container = document.getElementById('heritageListContainer');
+      if (!container) return;
+      const list = getHeritageRecipes();
+      if (list.length === 0) {
+        container.innerHTML = '<div class="text-stone-500 font-bold text-center py-4 bg-stone-100 rounded-2xl">目前尚未典藏手路菜，歡迎在上方開口口述阿嬤與媽媽的私房滋味！</div>';
+        return;
+      }
+      container.innerHTML = list.map(r => `
+        <div class="bg-amber-100/80 border-3 border-amber-600 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-2xl font-black text-[#7C2D12]">${r.emoji || '🏆'} ${r.title}</div>
+            <div class="text-lg text-stone-700 font-bold">${r.familyTip || '代代相傳私房記憶'}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openRecipeDetail('${r.id}'); closeModal('familyHeritageModal');" class="px-3.5 py-1.5 bg-[#9A3412] text-white font-black text-lg rounded-xl">查看</button>
+            <button onclick="deleteHeritageRecipe('${r.id}')" class="px-3 py-1.5 bg-red-100 text-red-700 border border-red-300 font-black text-lg rounded-xl">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function saveHeritageRecipeFromForm() {
+      const titleInput = document.getElementById('heritageTitleInput');
+      const notesInput = document.getElementById('heritageNotesInput');
+      const title = titleInput.value.trim();
+      const notes = notesInput.value.trim();
+
+      if (!title) {
+        alert('請輸入料理名稱（例如：阿嬤的黑麻油三杯雞）！');
+        titleInput.focus();
+        return;
+      }
+
+      const steps = notes
+        ? notes.split(/\r?\n|[。]/).map(s => s.trim()).filter(Boolean).slice(0, 4)
+        : ['依照家傳口訣備妥食材與醬汁。', '熱鍋小火煸香辛香料與主料。', '慢火燉煮收汁至軟透入味。', '趁熱上桌全家享用！'];
+
+      if (steps.length === 0) {
+        steps.push('熱鍋煸香食材，調配獨家醬汁慢火入味盛盤。');
+      }
+
+      const newRecipe = {
+        id: 'heritage-' + Date.now(),
+        title: '私房家傳・' + title,
+        emoji: '🏆',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 25,
+        seasonMonths: [1,2,3,4,5,6,7,8,9,10,11,12],
+        familyTags: ['#家族私房手路菜', '#阿嬤的滋味', '#代代相傳'],
+        familyTip: '👨‍👩‍👧‍👦 家傳私房精髓：' + (notes ? notes.slice(0, 80) + '...' : '代代傳承的溫暖滋味！'),
+        isHeritage: true,
+        ingredients: [
+          { name: title.includes('雞') ? '雞肉' : (title.includes('肉') ? '五花肉' : '當令主食材'), amount: '全家份量' },
+          { name: '老薑與蔥蒜', amount: '適量（爆香）' },
+          { name: '黑麻油或醬油、米酒', amount: '獨家調配' }
+        ],
+        steps: steps
+      };
+
+      saveHeritageRecipe(newRecipe);
+      titleInput.value = '';
+      notesInput.value = '';
+      alert('✅ 成功將「' + newRecipe.title + '」典藏到家族手路菜！已置頂顯示在菜單首頁！');
+      closeModal('familyHeritageModal');
+    }
+
+    function toggleHeritageVoiceDictation() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('請直接在文字框輸入或使用手機鍵盤上的麥克風口述！');
+        return;
+      }
+      const recog = new SpeechRecognition();
+      recog.lang = 'zh-TW';
+      const icon = document.getElementById('heritageVoiceIcon');
+      const txt = document.getElementById('heritageVoiceText');
+      icon.textContent = '🛑';
+      txt.textContent = '正在聽您口述家傳秘訣...';
+
+      recog.onresult = (e) => {
+        const heard = e.results[0][0].transcript;
+        const notesInput = document.getElementById('heritageNotesInput');
+        notesInput.value = notesInput.value ? notesInput.value + '。' + heard : heard;
+      };
+      recog.onend = () => {
+        icon.textContent = '🎙️';
+        txt.textContent = '按此開口唸給手機記';
+      };
+      recog.start();
+    }
+
+    // =========================================================================
+    // 【野心升級 9】一食材變三餐（好市多／大包裝食材鍊金術）
+    // =========================================================================
+    const ALCHEMY_PLANS = {
+      pork: {
+        title: '🥩 大條帶皮五花肉・買一次變三餐',
+        summary: '傳統市場或好市多一大條五花肉，先切大塊滷一鍋，連續三天完全不同吃法！',
+        days: [
+          { day: '第 1 天（豐盛開鍋）', title: '客家老味梅干扣肉（或古早味封肉）', tip: '第一天吃最軟嫩的帶皮厚切肉，濃油赤醬全家秒殺！' },
+          { day: '第 2 天（雙醬肉燥）', title: '蒜香肉燥雙醬拌飯／拌麵', tip: '取鍋底濃郁滷汁與邊角肉切小丁，淋在白飯或麵條上，小孩連吃兩碗！' },
+          { day: '第 3 天（熱炒下酒）', title: '客家經典小炒（芹菜魷魚豆干炒肉絲）', tip: '剩餘五花肉切條大火爆香煸出豬油，配芹菜魷魚香氣衝天！' }
+        ]
+      },
+      chicken: {
+        title: '🍗 市場整隻大土雞・買一次變三餐',
+        summary: '買整隻雞不用分三次煮！雞腿白斬、雞胸撕絲、雞架熬湯，清甜全家享用。',
+        days: [
+          { day: '第 1 天（鮮美嫩肉）', title: '客家桔醬白斬土雞腿', tip: '大火煮滾關火悶泡 25 分鐘，肉質滑嫩多汁，沾酸甜桔醬消暑解膩！' },
+          { day: '第 2 天（暖胃高湯）', title: '客家阿婆福菜排骨雞架湯', tip: '用雞架與排骨慢熬，福菜的發酵微酸帶出雞骨天然鮮甘！' },
+          { day: '第 3 天（香噴噴飯）', title: '黑麻油雞絲高麗菜拌飯', tip: '雞胸肉撕成細絲，用黑麻油爆香薑絲與高麗菜拌入白飯！' }
+        ]
+      },
+      cabbage: {
+        title: '🥬 一整大顆高麗菜・買一次變三餐',
+        summary: '一大顆高麗菜不用天天清炒吃到膩！分三段煮法，清脆、炊飯、蛋花湯。',
+        days: [
+          { day: '第 1 天（清脆快炒）', title: '鮮香脆甜櫻花蝦炒高麗菜', tip: '手撕外層脆葉大火快炒，蝦米蒜香融合清脆爽口！' },
+          { day: '第 2 天（一鍋電鍋出）', title: '大同電鍋高麗菜香腸香菇炊飯', tip: '內層葉片切碎，配香菇香腸米飯丟電鍋，一鍋搞定省洗鍋！' },
+          { day: '第 3 天（暖心清甜）', title: '高麗菜豆腐番茄鮮甜蛋花湯', tip: '菜梗與最後半碗高麗菜煮湯，天然甘甜零味精！' }
+        ]
+      },
+      minced_pork: {
+        title: '🧆 大包好市多豬絞肉・買一次變三餐',
+        summary: '大盒絞肉先分三等份！一包蒸肉餅、一包魚香茄子、一包乾煸四季豆。',
+        days: [
+          { day: '第 1 天（長輩最愛）', title: '古早味電鍋蔭瓜古早味蒸肉餅', tip: '絞肉拌入花瓜丁與蔭瓜汁蒸透，長輩幼兒拌飯無敵！' },
+          { day: '第 2 天（開胃下飯）', title: '塔香魚香茄子煲＆肉末豆腐', tip: '肉末爆香蒜薑，裹在茄子與豆腐上，軟爛多汁！' },
+          { day: '第 3 天（便當常勝）', title: '乾煸四季豆肉末', tip: '四季豆煸到表面微皺，炒入鹹香絞肉，便當首選！' }
+        ]
+      }
+    };
+
+    function renderAlchemyPlan(key) {
+      const targetKey = key || 'pork';
+      const plan = ALCHEMY_PLANS[targetKey] || ALCHEMY_PLANS.pork;
+      document.querySelectorAll('.alchemy-select-btn').forEach(btn => {
+        if (btn.dataset.alchemy === targetKey) {
+          btn.className = 'alchemy-select-btn p-3 rounded-2xl border-3 border-amber-600 bg-amber-100 text-[#7C2D12] font-black text-xl flex flex-col items-center gap-1 active:scale-95';
+        } else {
+          btn.className = 'alchemy-select-btn p-3 rounded-2xl border-3 border-stone-300 bg-white text-stone-800 font-black text-xl flex flex-col items-center gap-1 active:scale-95';
+        }
+      });
+
+      const container = document.getElementById('alchemyPlanResult');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="space-y-3">
+          <div class="text-2xl font-black text-[#7C2D12]">${plan.title}</div>
+          <p class="text-lg font-bold text-stone-700">${plan.summary}</p>
+          <div class="space-y-2.5 pt-1">
+            ${plan.days.map(d => `
+              <div class="bg-white border-2 border-amber-300 rounded-xl p-3.5 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="bg-[#9A3412] text-white text-base font-black px-2.5 py-0.5 rounded-lg">${d.day}</span>
+                  <span class="text-xl font-black text-stone-900">${d.title}</span>
+                </div>
+                <p class="text-base font-bold text-stone-600 leading-snug">${d.tip}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 【野心升級 10】30 分鐘三菜一湯平行指揮官 (Multi-Burner Scheduler)
+    // =========================================================================
+    let selectedForDinner = [];
+
+    function toggleParallelRecipeSelect(e, recipeId) {
+      e.stopPropagation();
+      const idx = selectedForDinner.indexOf(recipeId);
+      if (idx !== -1) {
+        selectedForDinner.splice(idx, 1);
+      } else {
+        if (selectedForDinner.length >= 4) {
+          alert('最多同時選擇 4 道菜組合平行開飯排程喔！');
+          return;
+        }
+        selectedForDinner.push(recipeId);
+      }
+      updateParallelStickyBar();
+      renderRecipeList();
+    }
+
+    function updateParallelStickyBar() {
+      const bar = document.getElementById('parallelCookStickyBar');
+      const summary = document.getElementById('parallelSelectedSummary');
+      if (!bar) return;
+      if (selectedForDinner.length > 0) {
+        bar.classList.remove('hidden');
+        summary.textContent = '今日開飯已選 ' + selectedForDinner.length + ' 道料理';
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    function clearParallelSelection() {
+      selectedForDinner = [];
+      updateParallelStickyBar();
+      renderRecipeList();
+    }
+
+    function openParallelCookModal() {
+      if (selectedForDinner.length === 0) {
+        alert('請先在食譜卡片上勾選 2～3 道想煮的菜色！');
+        return;
+      }
+      const chosenRecipes = allRecipes.filter(r => selectedForDinner.includes(r.id));
+      const container = document.getElementById('parallelTimelineContainer');
+      if (!container) return;
+
+      const soup = chosenRecipes.find(r => r.mealSlot === '暖心靚湯' || r.cookingMethod === '燉煮／煲湯') || chosenRecipes[0];
+      const mains = chosenRecipes.filter(r => r.id !== soup.id);
+      const main1 = mains[0] || chosenRecipes[0];
+      const main2 = mains[1] || null;
+
+      container.innerHTML = `
+        <div class="space-y-4 text-stone-900">
+          <div class="bg-amber-100/90 border-2 border-amber-400 rounded-2xl p-4">
+            <div class="text-xl font-black text-[#7C2D12] mb-1">今日同步出餐菜單：</div>
+            <div class="text-lg font-bold text-stone-800 space-y-1">
+              <div>🍲 湯品／電鍋：${soup.title}</div>
+              <div>🥘 主菜一：${main1.title}</div>
+              ${main2 ? `<div>🥬 主菜二／時蔬：${main2.title}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="bg-white border-3 border-stone-800 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="bg-stone-800 text-white font-black px-3 py-1 rounded-xl text-lg">第 00～06 分鐘</span>
+                <span class="text-stone-600 font-bold text-base">🔪 一次性合流切切備料</span>
+              </div>
+              <p class="text-xl font-bold leading-relaxed pt-1">
+                把 ${chosenRecipes.map(r => r.title.slice(0, 4)).join('、')} 的蔥、薑、蒜一次拍碎切段分盤；蔬菜洗淨手撕好，<strong>砧板與刀具洗一次就收工！</strong>
+              </p>
+            </div>
+
+            <div class="bg-amber-50 border-3 border-amber-600 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="bg-amber-700 text-white font-black px-3 py-1 rounded-xl text-lg">第 06～15 分鐘</span>
+                <span class="text-[#7C2D12] font-bold text-base">♨️ 電鍋／煲湯先起火（免顧火）</span>
+              </div>
+              <p class="text-xl font-bold leading-relaxed pt-1">
+                將「${soup.title}」食材與高湯全部放進大同電鍋，外鍋倒 2 杯水按下開關（或左口爐小火慢滾蓋鍋）。
+              </p>
+            </div>
+
+            <div class="bg-blue-50 border-3 border-blue-600 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="bg-blue-700 text-white font-black px-3 py-1 rounded-xl text-lg">第 15～24 分鐘</span>
+                <span class="text-blue-950 font-bold text-base">🥘 左爐小火慢悶入味</span>
+              </div>
+              <p class="text-xl font-bold leading-relaxed pt-1">
+                起左邊瓦斯爐煮「${main1.title}」，下肉塊或豆腐與醬汁，煮滾後轉中小火蓋鍋慢悶入味。
+              </p>
+            </div>
+
+            <div class="bg-emerald-50 border-3 border-emerald-600 rounded-2xl p-4 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="bg-emerald-700 text-white font-black px-3 py-1 rounded-xl text-lg">第 24～29 分鐘</span>
+                <span class="text-emerald-950 font-bold text-base">🔥 右爐大火快炒時蔬</span>
+              </div>
+              <p class="text-xl font-bold leading-relaxed pt-1">
+                右邊瓦斯爐開大火，下油與蒜末爆香，快炒時蔬或第二道菜 2～3 分鐘嗆香起鍋！
+              </p>
+            </div>
+
+            <div class="bg-gradient-to-r from-amber-600 to-rose-600 text-white rounded-2xl p-4 text-center font-black text-2xl shadow-lg">
+              🎉 第 30 分鐘整！電鍋剛好跳起，三菜一湯熱騰騰同時端上桌！
+            </div>
+          </div>
+        </div>
+      `;
+
+      openModal('parallelCookModal');
+    }
+
+    // =========================================================================
+    // 【野心升級 11】LINE 家庭群組點菜投票單
+    // =========================================================================
+    function shareDinnerPollToLine() {
+      if (!currentRecipe) return;
+
+      const now = new Date();
+      const dateStr = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+
+      // 1. 動態抓取主打菜單（包含今日開飯選中的多道料理或當前料理）
+      let dinnerDishes = [];
+      if (selectedForDinner && selectedForDinner.length > 0) {
+        const chosen = allRecipes.filter(r => selectedForDinner.includes(r.id));
+        dinnerDishes = chosen.map((r, i) => `${i + 1}️⃣ ${r.title}（約 ${r.cookTimeMins} 分鐘）`);
+      } else {
+        dinnerDishes = [
+          `1️⃣ ${currentRecipe.title}（約 ${currentRecipe.cookTimeMins} 分鐘）`,
+          `2️⃣ 鮮甜當季時蔬 ＋ 暖心煲湯`
+        ];
+      }
+
+      // 2. 動態產生採買小隊工單（優先採用使用者打勾的買菜食材，無打勾則取食譜前 2 項）
+      const checkedBoxes = document.querySelectorAll('#detailIngredientsList input[type="checkbox"]:checked');
+      let buyListDesc = '';
+      if (checkedBoxes.length > 0) {
+        const items = Array.from(checkedBoxes).slice(0, 3).map(cb => `${cb.dataset.name} (${cb.dataset.amount || '適量'})`);
+        buyListDesc = '👉 ' + items.join('、') + ' ❤️';
+      } else if (currentRecipe.ingredients && currentRecipe.ingredients.length > 0) {
+        const items = currentRecipe.ingredients.slice(0, 2).map(i => `${i.name} (${i.amount || '適量'})`);
+        buyListDesc = '👉 ' + items.join('、') + ' ❤️';
+      } else {
+        buyListDesc = '👉 嫩豆腐或板豆腐 1 盒、青蔥一把 ❤️';
+      }
+
+      const pollLines = [
+        '🍲【' + dateStr + ' 媽媽開伙！今晚全家晚餐預告】',
+        '--------------------------',
+        '✨ 今晚開飯菜單：',
+        ...dinnerDishes,
+        '',
+        '👨‍👩‍👧‍👦【家人點菜投票】：',
+        '想吃＋想回家吃飯的家人請在群組按 👍 喊聲（讓媽媽算洗幾杯米）！',
+        '',
+        '🛒【小小採買小隊工單】：',
+        '下班下課順路回家的家人，請順路幫媽媽帶：',
+        buyListDesc,
+        '--------------------------',
+        '由《三餐煮什麼》全家餐桌神隊友發送'
+      ];
+
+      const shareText = pollLines.join('\n');
+      const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(shareText);
+      window.open(lineUrl, '_blank');
+    }
+
     // 支援實體鍵盤 (桌機或外接鍵盤測試)
     window.addEventListener('keydown', (e) => {
       const overlay = document.getElementById('familyPinOverlay');
@@ -878,6 +2146,11 @@
     // 1. 視覺化冰箱常備與時令食材圖示字典 (36 種台灣市場常見食材，分為 5 大攤位 + ⭐常用最愛)
     // =========================================================================
     const VISUAL_INGREDIENTS = [
+      // 【特別推薦：客家與閩南經典在地時令】
+      { name: '芥菜/大菜', matchKeywords: ['芥菜', '大菜', '長年菜', '刈菜'], icon: '🥬', group: 'leafy_melon', defaultFav: true, peakMonths: [10,11,12,1,2,3], isVeggie: true, dialect: '客家大菜 / 台語刈菜', storageHack: '包入廚房紙巾吸附濕氣再套塑膠袋，直立擺放冷藏可保鮮10天！', marketHack: '葉梗肥厚、葉色翠綠微帶白粉者最甘甜！' },
+      { name: '福菜/梅干菜', matchKeywords: ['福菜', '覆菜', '梅干菜', '鹹菜', '酸菜'], icon: '🍲', group: 'leafy_melon', defaultFav: true, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dialect: '客家覆菜/鹹菜乾', storageHack: '密封罐冷藏，久放越陳越香！', marketHack: '聞起來有天然發酵甘醇香、無刺鼻酸味者最佳。' },
+      { name: '客家鹹豬肉', matchKeywords: ['鹹豬肉', '封肉', '客家封肉'], icon: '🥓', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dialect: '客家鹹豬肉', storageHack: '分切成條狀冷凍，退冰切薄片煎炒蒜苗超下飯！', marketHack: '五花肉五層分明、黑胡椒粒醃漬均勻。' },
+
       // 【攤位 1：🥩 豬/雞/牛肉】
       { name: '五花肉',   matchKeywords: ['五花肉', '控肉', '白肉'], icon: '🥓', group: 'meat', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
       { name: '梅花肉片', matchKeywords: ['梅花肉', '豬肉片', '肉片', '肉絲'], icon: '🥩', group: 'meat', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
@@ -1225,6 +2498,243 @@
     // 3. 內建台灣家庭三餐菜色資料庫 (完整涵蓋 8 大料理方式與所有視覺食材)
     // =========================================================================
     const BUILTIN_RECIPES = [
+      {
+        id: 'tw-h01',
+        title: '客家經典小炒（五花肉、豆干、乾魷魚）',
+        emoji: '🦑',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#客家經典', '#白飯殺手', '#便當常勝', '#香氣滿屋'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：乾魷魚先用溫鹽水泡軟剪細條，肉絲與豆干先煸出金黃焦香，長輩吃豆干軟嫩，大人配蒜辣芹菜！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：豆干與肉絲炒香加少許水悶至軟Q，在加入辣椒前，先盛起 1 碗豆干肉絲（長輩超好咬）！',
+          stage2: '🎒【學童便當／下飯】：下醬油膏與米酒翻炒上色，撈取甜鹹下飯的便當菜！',
+          stage3: '🌶️【大人嗆香收汁】：大火投朝天椒與芹菜段，大火快速翻炒 15 秒收汁，鹹香撲鼻！'
+        },
+        ingredients: [
+          { name: '傳統黃豆干', amount: '5 片（切條）' },
+          { name: '五花肉（或肉絲）', amount: '200 克（切條）' },
+          { name: '乾魷魚', amount: '半尾（泡軟剪細條）' },
+          { name: '芹菜與青蔥', amount: '各 1 大把（切段）' },
+          { name: '醬油膏與米酒', amount: '各 2 大匙' }
+        ],
+        steps: [
+          '乾魷魚泡溫鹽水 20 分鐘剪細條；五花肉與豆干切條；芹菜切段。',
+          '鍋中不加油，先煸五花肉出豬油，再放入豆干條煸至兩面金黃微焦。',
+          '放入魷魚絲與蒜末大火爆炒出香氣，沿鍋邊淋入醬油膏與米酒炒出醬香。',
+          '起鍋前倒入芹菜段與蔥段快速翻炒 15 秒，香脆噴香起鍋！'
+        ]
+      },
+      {
+        id: 'tw-h02',
+        title: '客家老味梅干扣肉（阿婆手路菜／客家封肉）',
+        emoji: '🥘',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 45,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#客家經典', '#客家封肉', '#入口即化', '#長輩好咬', '#牙口軟嫩', '#白飯殺手'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：五花肉蒸得入口即化、油而不膩，梅干菜鹹香甘甜，小孩淋肉汁、長輩夾爛肉！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：電鍋跳起後肉質極致軟爛，長輩與幼兒直接用湯匙舀肉片與梅干甜汁拌飯！',
+          stage2: '🎒【學童便當／下飯】：油亮肉片夾入便當，隔天蒸熱風味更濃醇！',
+          stage3: '🌶️【大人嗜辣吃法】：另外沾點蒜頭生辣椒醬油，開胃解膩雙重享受！'
+        },
+        ingredients: [
+          { name: '帶皮五花肉（或客家封肉）', amount: '600 克（切厚片）' },
+          { name: '客家梅干菜（或福菜）', amount: '1 把（洗淨切碎）' },
+          { name: '蒜頭與老薑片', amount: '各 5 瓣' },
+          { name: '醬油與米酒', amount: '各半碗' },
+          { name: '冰糖', amount: '1 大匙' }
+        ],
+        steps: [
+          '梅干菜充分泡水洗淨細沙，擠乾水分切碎；五花肉切約 1 公分厚片。',
+          '五花肉片下平底鍋中小火煸至兩面金黃微焦、逼出多餘油脂後盛起。',
+          '用鍋中豬油爆香蒜片與梅干菜，加醬油、米酒與冰糖炒出醇厚香氣。',
+          '取深碗把肉片鋪底、梅干菜鋪在上面，送入電鍋外鍋放 2.5 杯水蒸透即可倒扣盛盤！'
+        ]
+      },
+      {
+        id: 'tw-h03',
+        title: '客家阿婆福菜排骨肉片湯',
+        emoji: '🍲',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 35,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#客家經典', '#暖心靚湯', '#回甘不油膩', '#換季溫補'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：客家福菜自然發酵微酸，帶出排骨與三層肉片的天然甘甜，去油解膩老少都連喝兩碗！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：湯汁清甜微甘、排骨肉燉至輕輕一抿就骨肉分離，長輩幼兒喝最潤胃！',
+          stage2: '🎒【學童便當／下飯】：肉片盛出沾少許古早醬油膏就是一道超下飯白切肉！',
+          stage3: '🌶️【大人暖身提味】：碗裡撒點白胡椒粉與嫩薑絲，暖意從胃裡散開！'
+        },
+        ingredients: [
+          { name: '客家福菜（覆菜）', amount: '1 把（洗淨切小段）' },
+          { name: '豬小排或五花肉片', amount: '400 克' },
+          { name: '薑片', amount: '4 片' },
+          { name: '米酒與少許鹽', amount: '1 大匙' }
+        ],
+        steps: [
+          '福菜泡水 15 分鐘洗淨切小段；排骨滾水川燙沖淨瀝乾。',
+          '鍋中加 6 碗水，放入川燙好的排骨與薑片，大火煮沸後轉小火煮 20 分鐘。',
+          '加入切段的福菜與一匙米酒，繼續小火慢熬 15 分鐘讓福菜甘甜徹底釋放。',
+          '試喝湯頭（福菜已有鹹味，視個人口味補少許鹽），熱騰騰上桌！'
+        ]
+      },
+      {
+        id: 'tw-h04',
+        title: '客家阿婆大菜排骨芥菜湯（暖冬長年菜回甘煲湯）',
+        emoji: '🥬',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 30,
+        seasonMonths: [10, 11, 12, 1, 2, 3],
+        familyTags: ['#客家大菜', '#長年菜', '#苦甘回甘', '#換季溫補', '#長輩好咬'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：客家大菜（芥菜/刈菜）先用滾水川燙去除苦澀，再與排骨慢燉，湯頭苦甘回甜、菜梗軟嫩入味，長輩好咀嚼！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：大菜燉至軟爛綿密無渣、排骨肉輕抿即落，盛起 1 碗清甜溫補煲湯潤肺！',
+          stage2: '🎒【學童便當／下飯】：排骨與軟甜芥菜撈起，淋點蒜蓉油膏就是超開胃便當菜！',
+          stage3: '🌶️【大人暖身提味】：湯碗裡撒上一撮白胡椒粉與嫩薑絲，熱氣騰騰驅寒發汗！'
+        },
+        ingredients: [
+          { name: '客家大菜（芥菜/刈菜/長年菜）', amount: '半顆（切大塊）' },
+          { name: '豬小排骨或五花肉', amount: '400 克' },
+          { name: '老薑片與米酒', amount: '4 片 + 1 大匙' },
+          { name: '蛤蜊或干貝（提鮮）', amount: '100 克' }
+        ],
+        steps: [
+          '大菜（芥菜）切大塊，滾水川燙 30 秒撈起沖冷水（去除苦澀、保持翠綠軟嫩秘訣）。',
+          '排骨滾水川燙洗淨，放入湯鍋加薑片與清水大火煮沸後轉小火燉 18 分鐘。',
+          '放入川燙過的大菜（刈菜）與蛤蜊，繼續小火慢熬 10 分鐘讓芥菜軟甜回甘。',
+          '起鍋前淋少許米酒與鹽巴調味，苦甘回甜、越喝越潤喉！'
+        ]
+      },
+      {
+        id: 'tw-h05',
+        title: '蒜苗青蔥爆炒客家鹹豬肉（或客家封肉）',
+        emoji: '🥓',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#客家經典', '#客家鹹豬肉', '#白飯殺手', '#便當常勝', '#鹹香下酒'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：客家鹹豬肉切薄片先下鍋乾煸出豬油，蒜苗斜切大火快炒，鹹香甘醇！沾客家白醋蒜泥解膩，老少都搶著夾！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：鹹豬肉切薄片煸香加少許水燜軟，先盛出 1 小碗軟嫩豬肉薄片給長輩幼兒拌飯！',
+          stage2: '🎒【學童便當／下飯】：下蒜苗白與少許糖翻炒中和鹹度，撈取便當菜，冷了也超級香！',
+          stage3: '🌶️【大人嗆香收汁】：下大把蒜苗青與生辣椒片，大火翻炒 10 秒嗆香起鍋，下酒扒飯無敵！'
+        },
+        ingredients: [
+          { name: '客家鹹豬肉（或客家封肉）', amount: '300 克（切薄片）' },
+          { name: '蒜苗與青蔥', amount: '3 支（斜切段）' },
+          { name: '蒜片與生薑絲', amount: '各少許' },
+          { name: '米酒與少許冰糖', amount: '各 1 小匙' }
+        ],
+        steps: [
+          '客家鹹豬肉切成 0.3 公分薄片；蒜苗將蒜白與蒜青分開斜切段。',
+          '平底鍋不加油，直接下鹹豬肉薄片，中小火煸炒至兩面金黃微焦並逼出豬油。',
+          '放入蒜片、薑絲與蒜白大火爆香，熗入一小匙米酒與冰糖炒出焦糖醇香。',
+          '最後倒入蒜青大火翻炒 10 秒即刻關火，鹹香脆嫩、秒殺三碗飯！'
+        ]
+      },
+      {
+        id: 'tw-m01',
+        title: '阿嬤私房古早味九層塔菜脯蛋',
+        emoji: '🍳',
+        mealSlot: '下飯主菜',
+        cookingMethod: '香煎／乾煎',
+        isDeepFried: false,
+        cookTimeMins: 10,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#閩南經典', '#古早味手路菜', '#10分鐘上菜', '#小孩超愛淋飯', '#長輩好咬'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：碎菜脯先用水抓洗去死鹹，白鍋煸乾水分再倒進蔥花與蛋液，外酥內嫩金黃厚實！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：中間厚厚軟嫩的滑蛋部分夾給長輩與小朋友，鹹香綿密好咀嚼！',
+          stage2: '🎒【學童便當／下飯】：切成厚片夾入便當，放涼了依然香氣四溢！',
+          stage3: '🌶️【大人下酒配飯】：焦香微酥的蛋邊配九層塔，沾點辣椒醬油超級過癮！'
+        },
+        ingredients: [
+          { name: '碎菜脯（白蘿蔔乾）', amount: '半碗（抓洗泡水瀝乾）' },
+          { name: '新鮮雞蛋', amount: '5 顆' },
+          { name: '九層塔與青蔥', amount: '各 1 小把' },
+          { name: '白胡椒粉與香油', amount: '少許' }
+        ],
+        steps: [
+          '菜脯用水抓洗兩次去死鹹、徹底擰乾水分；雞蛋打散拌入蔥花與九層塔碎。',
+          '平底鍋不放油，先下菜脯碎乾煸 2 分鐘，煸出陣陣菜脯香氣盛出倒入蛋液中拌勻。',
+          '熱鍋加 2 大匙油，倒入菜脯蛋液，用鍋鏟由外往內劃圓讓蛋液均勻受熱成厚餅狀。',
+          '底面煎至金黃後翻面再煎 1 分鐘，兩面金黃酥脆即可滑入大盤！'
+        ]
+      },
+      {
+        id: 'tw-m02',
+        title: '正宗阿嬤味黑麻油老薑三杯雞',
+        emoji: '🍗',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 20,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#閩南經典', '#香氣滿屋', '#換季溫補', '#白飯殺手'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：黑麻油小火煸老薑至邊緣捲曲，雞肉川燙過再下鍋，九層塔最後起鍋前悶 10 秒最嫩最香！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：雞腿塊川燙去骨燉軟，在下辣椒大火嗆酒前，盛出 1 小碗軟嫩雞腿肉給小朋友與長輩！',
+          stage2: '🎒【學童便當／下飯】：雞肉裹滿黑麻油與冰糖醬香，濃郁醬汁拌入白飯孫子搶著吃！',
+          stage3: '🌶️【大人嗆香收汁】：大火投朝天椒與整把新鮮九層塔，蓋鍋沿鍋蓋淋一匙米酒嗆香，香氣掀翻屋頂！'
+        },
+        ingredients: [
+          { name: '仿土雞腿切塊', amount: '500 克' },
+          { name: '老薑片', amount: '12 片（厚薄均勻）' },
+          { name: '蒜頭與九層塔', amount: '10 瓣 + 滿滿一大把' },
+          { name: '純黑麻油', amount: '2 大匙' },
+          { name: '醬油、米酒、冰糖', amount: '比例 1 : 1 : 0.5' }
+        ],
+        steps: [
+          '雞肉滾水川燙 1 分鐘沖淨瀝乾（肉質緊實去腥秘訣）。',
+          '冷鍋倒入純黑麻油與老薑片，小火慢慢煸至老薑邊緣微捲、香氣撲鼻（不可大火防苦）。',
+          '放入蒜瓣與雞腿肉塊，轉中大火將雞皮煎至表面微金黃。',
+          '倒入醬油、米酒與冰糖，中小火悶煮 10 分鐘收濃稠醬汁，起鍋前塞入整把九層塔蓋鍋悶 10 秒即可！'
+        ]
+      },
+      {
+        id: 'tw-m03',
+        title: '大同電鍋古早味香菇瓜仔肉燥',
+        emoji: '🧆',
+        mealSlot: '下飯主菜',
+        cookingMethod: '紅燒／滷製',
+        isDeepFried: false,
+        cookTimeMins: 30,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#閩南經典', '#電鍋免顧火', '#白飯殺手', '#小孩超愛淋飯', '#帶便當首選', '#牙口軟嫩'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：脆瓜碎與香菇丁拌勻豬絞肉，外鍋一杯半水按下，拌飯拌麵全家吃光光！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：絞肉軟綿、瓜仔甘甜完全不油膩，長輩幼兒一匙拌飯秒殺！',
+          stage2: '🎒【學童便當／下飯】：多帶一小盒肉燥去學校便當，同學羨慕流口水！',
+          stage3: '🌶️【大人嗜辣吃法】：加一匙台式蒜蓉辣椒醬拌勻，香辣鹹甜絕配！'
+        },
+        ingredients: [
+          { name: '豬絞肉（肥三瘦七）', amount: '400 克' },
+          { name: '罐頭花瓜（或蔭瓜）', amount: '半罐（連同瓜汁，瓜肉切碎）' },
+          { name: '乾香菇', amount: '4 朵（泡軟切細丁）' },
+          { name: '蒜末與紅蔥頭酥', amount: '各 1 大匙' },
+          { name: '醬油、米酒、白胡椒', amount: '各適量' }
+        ],
+        steps: [
+          '乾香菇泡軟切細丁；罐頭花瓜切成碎末備用。',
+          '鍋中加一點點油爆香香菇丁與蒜末，放入豬絞肉翻炒至變白散開。',
+          '加入碎瓜肉、2 大匙花瓜罐頭甜汁、醬油、米酒與紅蔥頭酥拌炒出醬香。',
+          '移入大同電鍋內鍋加半碗水，外鍋倒 1.5 杯水按下開關，跳起後悶 10 分鐘即可澎湃拌飯！'
+        ]
+      },
+
       {
         id: 'tw-003',
         title: '餐廳級滑嫩家常番茄炒蛋',
@@ -1746,7 +3256,7 @@
         familyTags: ['#電鍋先蒸再煎', '#鹹香下飯', '#年節家常必備'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：香腸先放電鍋蒸熟再切片下鍋爆炒蒜苗或竹筍，不僅完全不焦黑，肉質還特別軟嫩多汁！',
         ingredients: [
-          { name: '台式香腸或臘肉、培根', amount: '3 條' },
+          { name: '台式香腸或客家鹹豬肉、臘肉、培根', amount: '3 條' },
           { name: '蒜苗或青蔥、竹筍、高麗菜', amount: '2 支 / 1 碗' },
           { name: '蒜片', amount: '4 瓣' }
         ],
@@ -1755,6 +3265,35 @@
           '平底鍋不加油，放入香腸片中小火煸出香氣與少許油脂。',
           '放入蒜片、蒜苗白（或竹筍片、高麗菜）拌炒均勻。',
           '起鍋前撒入青蒜苗尾段翻炒 10 秒即可澎湃上桌！'
+        ]
+      },
+      {
+        id: 'tw-024',
+        title: '彩椒時蔬香煎嫩雞胸（或彩椒炒雞丁／雞里肌）',
+        emoji: '🐔',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#高蛋白低脂', '#美魔女抗老', '#雞胸嫩而不柴', '#五彩繽紛'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：雞胸肉逆紋切丁抓少許太白粉與米酒，大火快炒保證滑嫩多汁不乾柴！主婦減脂、小孩長肌肉首選！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：雞胸丁滑炒至 8 分熟加少許高湯悶軟，先盛出 1 碗滑嫩無辣原味給幼兒長輩！',
+          stage2: '🎒【學童便當／下飯】：倒入彩椒與少許番茄醬或醬油膏炒勻，酸甜下飯填滿便當！',
+          stage3: '🌶️【大人嗆辣提味】：撒黑胡椒粒或加入辣椒圈大火翻炒 10 秒起鍋，香氣逼人！'
+        },
+        ingredients: [
+          { name: '新鮮雞胸肉（或雞里肌肉、雞丁）', amount: '300 克（切丁）' },
+          { name: '甜彩椒或小黃瓜、洋蔥', amount: '1 顆（切塊）' },
+          { name: '蒜末與蔥段', amount: '少許' },
+          { name: '醬油、米酒、太白粉', amount: '抓醃各 1 小匙' }
+        ],
+        steps: [
+          '雞胸肉（或雞里肌）逆紋切丁，用少許醬油、米酒、太白粉抓醃 5 分鐘鎖住肉汁。',
+          '熱鍋放少許油爆香蒜末，倒入雞胸丁大火滑炒至表面變白（約八分熟）先盛起。',
+          '原鍋放入甜彩椒塊與洋蔥翻炒 1 分鐘，加入兩大匙水燜至爽脆。',
+          '倒回雞丁，加少許鹽巴與黑胡椒大火翻炒 20 秒混合均勻，滑嫩爆汁！'
         ]
       }
     ];
@@ -1889,6 +3428,12 @@
     // 初始化
     window.addEventListener('DOMContentLoaded', () => {
       checkFamilyPinAuth();
+      initFontSize();
+      initSolarTermBanner();
+      loadHeritageRecipesToAll();
+      renderHeritageListModal();
+      renderAlchemyPlan('pork');
+
       const monthSelect = document.getElementById('monthSelector');
       monthSelect.value = String(currentMonth);
 
@@ -1908,7 +3453,7 @@
 
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=7').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=9').then(reg => {
           reg.update();
         }).catch(() => {});
       }
@@ -2152,6 +3697,7 @@
 
     function onMonthChange(newMonthStr) {
       currentMonth = parseInt(newMonthStr, 10);
+      initSolarTermBanner(currentMonth);
       renderVisualIngredients();
       renderRecipeList();
     }
@@ -2208,11 +3754,16 @@
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
-        const cleaned = transcript
-          .replace(/(我冰箱有|我有|我想煮|還有|跟|和|以及|。|，|,|\s+)/g, '、')
+        const norm = normalizeDialectText(transcript);
+        const cleaned = norm.text
+          .replace(/(我冰箱有|我有|我想煮|手邊有|剩|還有|跟|和|以及|。|，|,|\s+)/g, '、')
           .replace(/^、+|、+$/g, '');
         document.getElementById('ingredientInput').value = cleaned;
-        statusEl.textContent = `👂 聽到了：「${cleaned}」`;
+        if (norm.detectedDialects.length > 0) {
+          statusEl.textContent = '👂 聽到了！自動轉換台客俗名：[' + norm.detectedDialects.join('、') + '] ➔ 「' + cleaned + '」';
+        } else {
+          statusEl.textContent = '👂 聽到了：「' + cleaned + '」';
+        }
         handleIngredientInputChange();
       };
 
@@ -2279,19 +3830,20 @@
         : '';
 
       const prompt = `
-你是一位精通各地家常菜的主廚，請依照指定料理風格設計食譜。
-掌廚者是 60~70 歲的台灣媽媽/長輩（所以步驟文字必須極度精簡清晰），但這道菜是要煮給「全家大小（阿公阿嬤、上班族兒女、小孩）」一起吃的！
+你是一位精通台灣家庭與各地家常料理的主廚，請依照指定料理風格設計食譜。
+掌廚者是台灣家庭女主廚（涵蓋 30+ 職場新手媽咪至 50+、60+ 銀髮美魔女），面對全家不同成員口味需求（小孩挑食、先生/兒女帶便當、長輩牙口軟爛、主婦重視少油低負擔）。
 目前選定的食材是：「${ingredientsText}」（現在是台灣 ${currentMonth} 月）。
 指定使用的料理方式（烹調法）為：「${chosenMethod}」。
 指定料理風格為：「${chosenCuisine}」。調味、食材搭配與菜名請符合該風格。
 ${noFryInstruction}
 
-請設計 1 道道地、開胃下飯、老少咸宜的「${chosenCuisine}家常菜」（3~4人份）。
+請設計 1 道道地、營養開胃、老少咸宜的「${chosenCuisine}家常菜」（3~4人份）。
 嚴格遵守：
 1. 食材清單只列客觀名稱與份量（3~4人份）。
 2. 料理步驟必須精簡為 3 到 4 個步驟，每一步不超過 35 個字，口吻溫暖直白，嚴禁複製網路食譜原文。
 3. 附上一句 familyTip（全家共食小撇步）。
-4. 請只回傳純 JSON 物件：
+4. 附上 multiGenTimeline（同一鍋老少三段式起鍋指南：stage1 幼兒長輩先行軟爛低鈉、stage2 學童便當甜鹹下飯、stage3 成人大火嗆香收汁）。
+5. 請只回傳純 JSON 物件：
 {
   "title": "菜名",
   "emoji": "🍲",
@@ -2300,6 +3852,11 @@ ${noFryInstruction}
   "cookTimeMins": 18,
   "familyTags": ["#${chosenMethod}", "#全家搶食", "#白飯殺手"],
   "familyTip": "👨‍👩‍👧‍👦 全家共食撇步：...",
+  "multiGenTimeline": {
+    "stage1": "👶👵【長輩幼兒先行】：...",
+    "stage2": "🎒【學童便當／下飯】：...",
+    "stage3": "🌶️【成人大火嗆香】：..."
+  },
   "ingredients": [
     {"name": "食材名", "amount": "份量描述"}
   ],
@@ -2340,6 +3897,7 @@ ${noFryInstruction}
         seasonMonths: [currentMonth],
         familyTags: Array.isArray(parsed.familyTags) ? parsed.familyTags : [`#${chosenMethod}`, '#全家愛吃', '#AI主廚配菜'],
         familyTip: parsed.familyTip || '👨‍👩‍👧‍👦 全家共食撇步：起鍋前可先盛起一份原味給小孩與長輩，剩下的加點蔥蒜辣椒拌炒給年輕人下飯！',
+        multiGenTimeline: parsed.multiGenTimeline || null,
         cuisineStyle: chosenCuisine,
         ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [{ name: ingredientsText, amount: '適量' }],
         steps: Array.isArray(parsed.steps) ? parsed.steps.slice(0, 4) : [],
@@ -2531,12 +4089,18 @@ ${noFryInstruction}
 
     function doesRecipeMatchTerm(recipe, term) {
       const fullText = recipe.title + ' ' + recipe.ingredients.map(i => i.name).join(' ');
-      // 檢查是否為視覺化食材圖示（若有定義同義詞如 鮮魚 -> 鱸魚/鯖魚，一併比對）
-      const visualItem = VISUAL_INGREDIENTS.find(v => v.name === term);
+      // 1. 若手動輸入台客語俗名（如菜瓜、二層肉、大菜），自動正規化為標準名比對
+      const normalizedTerm = (typeof DIALECT_INGREDIENT_MAP !== 'undefined' && DIALECT_INGREDIENT_MAP[term]) ? DIALECT_INGREDIENT_MAP[term] : term;
+
+      // 2. 檢查是否為視覺化食材圖示（若有定義同義詞如 鮮魚 -> 鱸魚/鯖魚，或白蘿蔔 -> 菜頭/菜脯，一併比對）
+      const visualItem = VISUAL_INGREDIENTS.find(v =>
+        v.name === term || v.name === normalizedTerm ||
+        (v.matchKeywords && (v.matchKeywords.includes(term) || v.matchKeywords.includes(normalizedTerm)))
+      );
       if (visualItem && visualItem.matchKeywords) {
         return visualItem.matchKeywords.some(kw => fullText.includes(kw));
       }
-      return fullText.includes(term);
+      return fullText.includes(term) || fullText.includes(normalizedTerm);
     }
 
     function renderRecipeList() {
@@ -2553,10 +4117,16 @@ ${noFryInstruction}
         if (excludeDeepFried && recipe.isDeepFried) return false;
         if (activeCookingMethod !== 'all' && recipe.cookingMethod !== activeCookingMethod) return false;
         if (activeMealFilter !== 'all' && recipe.mealSlot !== activeMealFilter) return false;
+        if (activeCareMode && CARE_MODE_CONFIG[activeCareMode]) {
+          const cfg = CARE_MODE_CONFIG[activeCareMode];
+          const hasTag = (recipe.familyTags || []).some(t => cfg.tags.some(ct => t.includes(ct.replace('#', ''))));
+          const hasKw = cfg.keywords.some(kw => (recipe.title + ' ' + (recipe.ingredients || []).map(i => i.name).join(' ')).includes(kw));
+          if (!hasTag && !hasKw) return false;
+        }
         if (terms.length > 0) {
           return terms.some(term => doesRecipeMatchTerm(recipe, term));
         }
-        return recipe.seasonMonths.includes(currentMonth) || recipe.isAiGenerated;
+        return recipe.seasonMonths.includes(currentMonth) || recipe.isAiGenerated || recipe.isHeritage;
       });
 
       if (filtered.length === 0 && terms.length === 0) {
@@ -2611,8 +4181,24 @@ ${noFryInstruction}
       container.innerHTML = filtered.map(recipe => `
         <article
           onclick="openRecipeDetail('${recipe.id}')"
-          class="bg-white border-4 border-stone-800 rounded-3xl p-5 sm:p-6 shadow-md hover:border-[#9A3412] transition cursor-pointer active:scale-[0.99]"
+          class="bg-white border-4 ${recipe.isHeritage ? 'heritage-gold-card' : 'border-stone-800'} rounded-3xl p-5 sm:p-6 shadow-md hover:border-[#9A3412] transition cursor-pointer active:scale-[0.99]"
         >
+          <!-- 開飯平行指揮官選擇列 -->
+          <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-stone-200" onclick="event.stopPropagation()">
+            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                ${selectedForDinner.includes(recipe.id) ? 'checked' : ''}
+                onchange="toggleParallelRecipeSelect(event, '${recipe.id}')"
+                class="senior-checkbox"
+              />
+              <span class="text-xl sm:text-2xl font-black ${selectedForDinner.includes(recipe.id) ? 'text-[#9A3412]' : 'text-stone-700'}">
+                ${selectedForDinner.includes(recipe.id) ? '✅ 今日開飯菜單（已選）' : '➕ 選入今日三菜一湯'}
+              </span>
+            </label>
+            ${recipe.isHeritage ? `<span class="bg-amber-600 text-white font-black text-base px-3 py-1 rounded-full shadow">🏆 家族手路菜</span>` : ''}
+          </div>
+
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex flex-wrap items-center gap-2">
               <span class="bg-emerald-100 text-emerald-950 border-2 border-emerald-600 font-extrabold text-xl px-4 py-1 rounded-full">
@@ -2685,9 +4271,14 @@ ${noFryInstruction}
       const recipe = allRecipes.find(r => r.id === recipeId);
       if (!recipe) return;
       currentRecipe = recipe;
+      coPilotStepIdx = 0;
 
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+      }
+      if (isCoPilotListening && recipe.steps && recipe.steps.length > 0) {
+        highlightCoPilotStep(0);
+        speakStepText('為您開啟' + recipe.title + '。第 1 步：' + recipe.steps[0]);
       }
 
       document.getElementById('detailMethodBadge').textContent = `🍳 ${recipe.cookingMethod}`;
@@ -2707,6 +4298,27 @@ ${noFryInstruction}
         tipBox.textContent = recipe.familyTip;
       } else {
         tipBox.classList.add('hidden');
+      }
+
+      // 渲染動態一鍋老少三段式時序解構卡
+      const timeline = getRecipeMultiGenTimeline(recipe);
+      const stage1El = document.getElementById('multiGenStage1Text');
+      const stage2El = document.getElementById('multiGenStage2Text');
+      const stage3El = document.getElementById('multiGenStage3Text');
+      if (stage1El) stage1El.textContent = timeline.stage1;
+      if (stage2El) stage2El.textContent = timeline.stage2;
+      if (stage3El) stage3El.textContent = timeline.stage3;
+
+      // 渲染菜市場挑菜＆紅白塑膠袋保鮮微錦囊
+      const hackText = document.getElementById('detailStorageHackText');
+      if (hackText) {
+        const firstIng = recipe.ingredients[0] ? recipe.ingredients[0].name.replace(/[（(].*$/, '') : '';
+        const hackMatch = INGREDIENT_STORAGE_HACKS[firstIng] || Object.entries(INGREDIENT_STORAGE_HACKS).find(([k]) => recipe.title.includes(k) || recipe.ingredients.some(i => i.name.includes(k)))?.[1];
+        if (hackMatch) {
+          hackText.innerHTML = '<strong>【挑菜訣竅】</strong>：' + hackMatch.market + '<br/><strong class="text-[#9A3412]">【紅白塑膠袋保鮮】</strong>：' + hackMatch.storage;
+        } else {
+          hackText.innerHTML = '買回來的食材別直接把紅白塑膠袋綁死悶著！葉菜類先用廚房紙巾包裹吸水氣再套袋冷藏；五花肉與肉絲可分裝成小包冷凍，保鮮一整週！';
+        }
       }
 
       // 渲染本道菜食材圖示列（長按/點擊看名稱）
@@ -2736,8 +4348,8 @@ ${noFryInstruction}
 
       const stepsContainer = document.getElementById('detailStepsList');
       stepsContainer.innerHTML = recipe.steps.map((stepText, idx) => `
-        <div class="bg-warmCard border-4 border-amber-800/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-sm">
-          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#9A3412] text-white font-black text-3xl flex items-center justify-center shrink-0 shadow">
+        <div id="detailStepCard-${idx}" class="detail-step-card bg-warmCard border-4 border-amber-800/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-sm transition-all duration-200">
+          <div class="step-num-badge w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#9A3412] text-white font-black text-3xl flex items-center justify-center shrink-0 shadow">
             ${idx + 1}
           </div>
           <p class="text-2xl sm:text-3xl font-extrabold text-stone-900 leading-relaxed">
@@ -2825,6 +4437,7 @@ ${noFryInstruction}
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      stopKitchenCoPilot();
       document.getElementById('detailView').classList.add('hidden');
       document.getElementById('homeView').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
