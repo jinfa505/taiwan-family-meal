@@ -406,7 +406,7 @@
               <span>🥚</span><span>蛋/豆腐/豆干</span>
             </button>
             <button onclick="setIngGroup('leafy_melon')" data-group="leafy_melon" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
-              <span>🥬</span><span>葉菜與瓜果</span>
+              <span>🥬</span><span>葉菜瓜果＆水果</span>
             </button>
             <button onclick="setIngGroup('root_mushroom')" data-group="root_mushroom" class="ing-group-tab py-3 px-2.5 rounded-2xl font-extrabold text-xl border-3 border-stone-300 bg-white text-stone-800 flex items-center justify-center gap-1.5">
               <span>🍄</span><span>根莖與菇筍</span>
@@ -1327,26 +1327,26 @@
       exam: {
         label: '🎓 考前衝刺補腦',
         tags: ['#考前補腦', '#高蛋白', '#白飯殺手', '#小孩超愛淋飯', '#小孩長輩搶著夾'],
-        keywords: ['鮭魚', '鱸魚', '雞蛋', '嫩豆腐', '蛤蜊', '白蝦'],
-        msg: '為考生挑選高 DHA 深海魚、卵磷脂雞蛋豆腐與低升糖蛋白質，提神醒腦不打瞌睡！'
+        keywords: ['鮭魚', '鱸魚', '雞蛋', '嫩豆腐', '蛤蜊', '白蝦', '蘋果'],
+        msg: '為考生挑選高 DHA 深海魚、卵磷脂雞蛋豆腐、清甜蘋果與低升糖蛋白質，提神醒腦不打瞌睡！'
       },
       comfort: {
         label: '🤧 換季溫補養胃',
         tags: ['#換季溫補', '#暖心靚湯', '#退火補元氣', '#清甜養胃'],
-        keywords: ['白蘿蔔', '老薑', '雞腿', '排骨', '絲瓜', '香菇', '福菜'],
-        msg: '早晚溫差大！挑選溫潤去燥燉湯、老薑黑麻油、清蒸鱸魚與軟甜白蘿蔔，保護全家呼吸道！'
+        keywords: ['白蘿蔔', '老薑', '雞腿', '排骨', '絲瓜', '香菇', '福菜', '大白菜', '乾香菇', '蘋果'],
+        msg: '早晚溫差大！挑選溫潤去燥燉湯、老薑黑麻油、大白菜滷、蘋果排骨湯與軟甜白蘿蔔，保護全家呼吸道！'
       },
       soft: {
         label: '🦷 長輩幼兒極軟',
         tags: ['#牙口軟嫩', '#極軟好咬', '#入口即化', '#長輩好咬', '#冬粉滑順好入口'],
-        keywords: ['嫩豆腐', '冬粉', '茄子', '蒸蛋', '絲瓜', '絞肉', '魚片'],
-        msg: '免咀嚼、入口即化！挑選吸滿湯汁的冬粉、蒸豆腐、鮮甜瓜果與細嫩魚片，牙口輕鬆無負擔！'
+        keywords: ['嫩豆腐', '冬粉', '茄子', '蒸蛋', '絲瓜', '絞肉', '魚片', '大白菜', '奶油白菜', '白花椰菜'],
+        msg: '免咀嚼、入口即化！挑選吸滿湯汁的冬粉、蒸豆腐、軟爛大白菜滷、滑嫩奶油白菜與細嫩魚片，牙口輕鬆無負擔！'
       },
       beauty: {
         label: '✨ 主婦凍齡輕盈',
         tags: ['#低油抗老', '#少油清爽', '#高纖消水腫', '#全家必備青菜', '#年節少油煙'],
-        keywords: ['地瓜葉', '黑木耳', '鮭魚', '花椰菜', '番茄', '苦瓜', '櫻花蝦'],
-        msg: '媽媽與美魔女主人的凍齡餐桌！少油煙、高抗氧化植化素、高纖木耳與膠原白肉，輕盈健康！'
+        keywords: ['地瓜葉', '黑木耳', '鮭魚', '花椰菜', '白花椰菜', '番茄', '苦瓜', '櫻花蝦', '蚵白菜', '杏鮑菇', '蘋果'],
+        msg: '媽媽與美魔女主人的凍齡餐桌！少油煙、高抗氧化植化素、高纖杏鮑菇、白花椰與膠原白肉，輕盈健康！'
       }
     };
 
@@ -1395,6 +1395,13 @@
       '菜脯': '白蘿蔔/菜脯', '薑母': '老薑', '蒜仔': '青蔥/蒜苗', '芫荽': '香菜', '柑仔蜜': '番茄',
       '臭柿仔': '番茄', '冬粉仔': '冬粉/粉絲', '塗豆': '花生', '刈菜': '芥菜', '長年菜': '芥菜',
       '破布子': '破布子', '甘樹子': '破布子',
+      '包心白菜': '大白菜', '結球白菜': '大白菜', '白菜': '大白菜',
+      '蚵白': '蚵白菜', '蚵仔白菜': '蚵白菜', '黑白菜': '蚵白菜',
+      '白花菜': '白花椰菜', '花菜': '白花椰菜',
+      '香菇乾': '乾香菇', '乾冬菇': '乾香菇', '冬菇': '乾香菇',
+      '雞腿菇': '杏鮑菇',
+      '王梨': '鳳梨', '波羅': '鳳梨',
+      '林檎': '蘋果',
       // 客家話 (四縣/海陸)
       '大菜': '芥菜', '覆菜': '福菜', '福菜': '福菜', '鹹菜': '酸菜', '梅干菜': '梅干菜',
       '鹹菜乾': '梅干菜', '面帕粄': '粄條', '粄條': '冬粉/粉絲', '客家封肉': '五花肉',
@@ -1420,6 +1427,38 @@
       '高麗菜': {
         market: '拿起來沉甸甸、葉球緊實、切口潔白者甜度最高。',
         storage: '紅白塑膠袋別悶死！塑膠袋內放一張摺疊廚房紙巾吸附水氣，切開處貼保鮮膜，常保清脆兩週！'
+      },
+      '大白菜': {
+        market: '拿起來沉甸甸、菜球緊實飽滿、外葉翠綠微黃無黑斑者最甜。',
+        storage: '整顆用報紙或廚房紙巾包覆直立冷藏可放 2~3 週；切開則用保鮮膜密封切口，甘甜不流失！'
+      },
+      '蚵白菜': {
+        market: '葉片深綠厚實無黃葉、葉柄白嫩肥厚短胖、觸感清脆挺拔最鮮嫩。',
+        storage: '吸乾表面水氣，用紙巾包好裝入保鮮袋，根部朝下直立冷藏可保鮮 5 天不爛！'
+      },
+      '奶油白菜': {
+        market: '葉面深綠圓厚如湯匙、梗部乳白肥厚，口感細緻溫潤無草腥。',
+        storage: '先別水洗，用廚房紙巾吸濕包好後入夾鏈袋冷藏，保鮮一週依然嫩脆滑順！'
+      },
+      '白花椰菜': {
+        market: '花球面潔白緊密、無黑斑散開、花梗切口水嫩無空心者最脆甜。',
+        storage: '整顆不洗裝入打洞塑膠袋冷藏；切小朵鹽水洗淨瀝乾後焯水冷凍，隨時煮超方便！'
+      },
+      '乾香菇': {
+        market: '菇傘厚實完整、內側菌褶金黃乾燥、香氣濃醇無受潮霉味。',
+        storage: '放密封罐加乾燥劑置陰涼處或冷凍保存香氣經年不散；泡軟的香菇水留作高湯鮮味十足！'
+      },
+      '杏鮑菇': {
+        market: '菇柄粗大潔白、質地扎實有彈性、菇帽微捲未大開者口感最Q彈多汁。',
+        storage: '用紙巾包裹吸乾水氣，放入夾鏈袋冷藏，可保鮮 7~10 天水分不流失！'
+      },
+      '蘋果': {
+        market: '果皮帶自然果粉、拿起來沉甸結實、敲擊聲音清脆，帶天然果香者最脆甜。',
+        storage: '會釋放乙烯催熟其他蔬果！務必單獨套袋密封冷藏，入菜煮湯去油解膩、軟化肉質！'
+      },
+      '鳳梨': {
+        market: '果實飽滿、果目大而平坦、聞起來有微甜清香，富含天然鳳梨酵素。',
+        storage: '整顆倒立擺放（頭朝下）讓糖分回流均勻；切塊後放保鮮盒冷藏 3 天內享用或入菜燉湯！'
       },
       '絲瓜': {
         market: '拿起來沉重、頭尾粗細勻稱、表皮微粗糙者最鮮嫩多汁。',
@@ -2143,7 +2182,7 @@
     checkFamilyPinAuth();
 
     // =========================================================================
-    // 1. 視覺化冰箱常備與時令食材圖示字典 (36 種台灣市場常見食材，分為 5 大攤位 + ⭐常用最愛)
+    // 1. 視覺化冰箱常備與時令食材圖示字典 (台灣市場常見食材與入菜水果，分為 5 大攤位 + ⭐常用最愛)
     // =========================================================================
     const VISUAL_INGREDIENTS = [
       // 【特別推薦：客家與閩南經典在地時令】
@@ -2178,13 +2217,19 @@
       { name: '冬粉/粉絲', matchKeywords: ['冬粉', '粉絲', '米粉'], icon: '🍜', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
       { name: '貢丸/魚丸', matchKeywords: ['貢丸', '魚丸', '丸子'], icon: '🍡', group: 'egg_tofu', defaultFav: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
 
-      // 【攤位 4：🥬 葉菜與瓜果】 (對齊農糧署時令月份)
+      // 【攤位 4：🥬 葉菜瓜果與入菜水果】 (對齊農糧署時令月份)
       { name: '高麗菜',   matchKeywords: ['高麗菜'], icon: '🥬', group: 'leafy_melon', defaultFav: true,  peakMonths: [10,11,12,1,2,3,4], isVeggie: true },
+      { name: '大白菜',   matchKeywords: ['大白菜', '結球白菜', '包心白菜', '白菜滷'], icon: '🥬', group: 'leafy_melon', defaultFav: true,  peakMonths: [11,12,1,2,3], isVeggie: true, dialect: '台語包心白菜/結球白菜', storageHack: '整顆報紙包覆直立冷藏，切開處貼保鮮膜可放2~3週！', marketHack: '拿起來沉甸甸、菜球緊實飽滿、外葉無黑斑最甜。' },
+      { name: '蚵白菜',   matchKeywords: ['蚵白菜', '蚵仔白菜', '黑白菜', '蚵白'], icon: '🥬', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4,5], isVeggie: true, dialect: '台語蚵仔白菜/蚵白', storageHack: '吸乾水氣用紙巾包好裝入保鮮袋直立冷藏，可放5天依舊脆嫩！', marketHack: '葉片深綠厚實無黃斑、葉柄白嫩短胖最鮮嫩。' },
+      { name: '奶油白菜', matchKeywords: ['奶油白菜', '奶油菜'], icon: '🥬', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4], isVeggie: true, dialect: '奶油白菜', storageHack: '避免水洗，用紙巾包覆放入夾鏈袋冷藏，保鮮一週口感細嫩！', marketHack: '葉面深綠圓厚如湯匙、梗部乳白肥厚，口感細緻溫潤無草腥。' },
       { name: '地瓜葉',   matchKeywords: ['地瓜葉'], icon: '🌿', group: 'leafy_melon', defaultFav: true,  peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
       { name: '空心菜/A菜', matchKeywords: ['空心菜', 'A菜', '大陸妹', '小白菜'], icon: '🥗', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
       { name: '青江菜/菠菜', matchKeywords: ['青江菜', '菠菜', '芥蘭', '油菜'], icon: '🥬', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3], isVeggie: true },
-      { name: '花椰菜',   matchKeywords: ['花椰菜', '青花菜'], icon: '🥦', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4], isVeggie: true },
+      { name: '白花椰菜', matchKeywords: ['白花椰菜', '白花椰', '白花菜', '花菜'], icon: '🥦', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4], isVeggie: true, dialect: '台語花菜/白花菜', storageHack: '整顆不洗裝打洞塑膠袋冷藏；切小朵鹽水洗淨焯水冷凍！', marketHack: '花球潔白緊密無黃斑散開、花梗切口水嫩無空心最脆甜。' },
+      { name: '青花菜/綠花椰', matchKeywords: ['青花菜', '綠花椰', '花椰菜'], icon: '🥦', group: 'leafy_melon', defaultFav: false, peakMonths: [10,11,12,1,2,3,4], isVeggie: true },
       { name: '番茄',     matchKeywords: ['番茄'], icon: '🍅', group: 'leafy_melon', defaultFav: true,  peakMonths: [11,12,1,2,3,4], isVeggie: true },
+      { name: '蘋果',     matchKeywords: ['蘋果', '富士蘋果', '蜜蘋果'], icon: '🍎', group: 'leafy_melon', defaultFav: false, peakMonths: [9,10,11,12,1,2,3], isVeggie: true, dialect: '台語リンゴ / 蘋果', storageHack: '會釋放乙烯催熟其他蔬果！單獨套袋密封冷藏，煮湯或入咖哩天然清甜！', marketHack: '拿起來沉甸結實、帶天然果香，入菜煮湯去油解膩、軟化肉質！' },
+      { name: '鳳梨',     matchKeywords: ['鳳梨', '蔭鳳梨', '波羅'], icon: '🍍', group: 'leafy_melon', defaultFav: false, peakMonths: [3,4,5,6,7,8,9], isVeggie: true, dialect: '台語王梨', storageHack: '頭朝下倒立擺放讓糖分回流；切塊冷藏3天內入菜或享用！', marketHack: '果目平坦、香氣清甜，含豐富天然酵素，入菜燉雞湯肉嫩甘美！' },
       { name: '絲瓜',     matchKeywords: ['絲瓜'], icon: '🥒', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
       { name: '苦瓜/冬瓜', matchKeywords: ['苦瓜', '冬瓜', '大黃瓜'], icon: '🍈', group: 'leafy_melon', defaultFav: false, peakMonths: [5,6,7,8,9,10], isVeggie: true },
       { name: '小黃瓜/櫛瓜', matchKeywords: ['小黃瓜', '櫛瓜'], icon: '🥒', group: 'leafy_melon', defaultFav: false, peakMonths: [4,5,6,7,8,9,10], isVeggie: true },
@@ -2196,7 +2241,9 @@
       { name: '洋蔥/紅蘿蔔', matchKeywords: ['洋蔥', '紅蘿蔔'], icon: '🧅', group: 'root_mushroom', defaultFav: false, peakMonths: [11,12,1,2,3,4], isVeggie: true },
       { name: '玉米/玉米筍', matchKeywords: ['玉米', '玉米筍'], icon: '🌽', group: 'root_mushroom', defaultFav: true,  peakMonths: [9,10,11,12,1,2,3], isVeggie: true },
       { name: '山藥/南瓜', matchKeywords: ['山藥', '南瓜', '芋頭'], icon: '🍠', group: 'root_mushroom', defaultFav: false, peakMonths: [9,10,11,12,1,2], isVeggie: true },
-      { name: '香菇/杏鮑菇', matchKeywords: ['香菇', '杏鮑菇', '鴻喜菇', '金針菇', '菇'], icon: '🍄', group: 'root_mushroom', defaultFav: false, peakMonths: [9,10,11,12,1,2,3], isVeggie: true },
+      { name: '乾香菇',   matchKeywords: ['乾香菇', '香菇乾', '乾冬菇', '冬菇'], icon: '🍄', group: 'root_mushroom', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], isVeggie: true, dialect: '台語香菇乾/冬菇', storageHack: '放密封罐加乾燥劑置陰涼處或冷凍保存香氣經年不散；泡軟的香菇水留作高湯鮮味十足！', marketHack: '菇傘完整厚實、內側菌褶金黃乾燥、香氣濃醇無霉味。' },
+      { name: '杏鮑菇',   matchKeywords: ['杏鮑菇', '雞腿菇'], icon: '🍄', group: 'root_mushroom', defaultFav: true,  peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], isVeggie: true, dialect: '杏鮑菇/雞腿菇', storageHack: '用紙巾包裹吸乾水氣放入夾鏈袋冷藏，可保鮮 7~10 天水分不流失！', marketHack: '菇柄粗大潔白、質地扎實有彈性、菇帽微捲未大開者口感最Q彈多汁。' },
+      { name: '鮮香菇/菇類', matchKeywords: ['鮮香菇', '香菇', '生香菇', '鴻喜菇', '金針菇', '雪白菇', '菇'], icon: '🍄', group: 'root_mushroom', defaultFav: false, peakMonths: [9,10,11,12,1,2,3], isVeggie: true, dialect: '生香菇/黑早冬菇', storageHack: '不要水洗，紙巾包裹冷藏；傘褶朝下擺放可延緩孢子掉落發黑！', marketHack: '菇傘厚實圓潤、菌褶潔白無發黑、摸起來乾燥有彈性。' },
       { name: '黑木耳/竹筍', matchKeywords: ['黑木耳', '木耳', '竹筍', '茭白筍'], icon: '🎍', group: 'root_mushroom', defaultFav: false, peakMonths: [5,6,7,8,9,10], isVeggie: true }
     ];
 
@@ -2205,8 +2252,8 @@
       meat: '🥩 豬肉、雞肉、牛肉與排骨攤位（點選後會自動幫您記進常用清單）',
       seafood: '🐟 鮮魚、鮭魚、蝦仁、蛤蜊與透抽攤位',
       egg_tofu: '🥚 冰箱常備的雞蛋、豆腐、豆干、冬粉與丸子攤位',
-      leafy_melon: '🥬 台灣四季葉菜、高麗菜、番茄與瓜果攤位',
-      root_mushroom: '🍄 根莖類（蘿蔔、馬鈴薯、洋蔥、玉米）與鮮菇竹筍攤位'
+      leafy_melon: '🥬 台灣四季葉菜、高麗菜、大白菜、番茄、瓜果與入菜水果（蘋果/鳳梨）攤位',
+      root_mushroom: '🍄 根莖類（蘿蔔、洋蔥、玉米）與乾香菇、杏鮑菇、鮮菇竹筍乾貨攤位'
     };
 
     // =========================================================================
@@ -2442,7 +2489,7 @@
         code: 'all',
         label: '全部煮法',
         icon: '🍽️',
-        benefit: '💡 全部煮法：涵蓋快炒、紅燒滷肉、清蒸、燉湯、香煎、氣炸烤物等全家大小最愛的台式家常菜（可隨時切換右上角「不看油炸」開關）。'
+        benefit: '💡 全部煮法：涵蓋快炒、紅燒滷肉、清蒸、燉湯、香煎、氣炸烤物等全家人最愛的家常菜（可隨時切換右上角「不看油炸」開關）。'
       },
       {
         code: '家常快炒',
@@ -2718,7 +2765,7 @@
         multiGenTimeline: {
           stage1: '👶👵【長輩幼兒先行】：絞肉軟綿、瓜仔甘甜完全不油膩，長輩幼兒一匙拌飯秒殺！',
           stage2: '🎒【學童便當／下飯】：多帶一小盒肉燥去學校便當，同學羨慕流口水！',
-          stage3: '🌶️【大人嗜辣吃法】：加一匙台式蒜蓉辣椒醬拌勻，香辣鹹甜絕配！'
+          stage3: '🌶️【大人嗜辣吃法】：加一匙特調蒜蓉辣椒醬拌勻，香辣鹹甜絕配！'
         },
         ingredients: [
           { name: '豬絞肉（肥三瘦七）', amount: '400 克' },
@@ -3187,7 +3234,7 @@
           { name: '白玉苦瓜或冬瓜', amount: '1 條（切厚塊）' },
           { name: '帶骨雞腿肉或貢丸、魚丸', amount: '400 克' },
           { name: '蛤蜊與薑片', amount: '150 克 + 4 片' },
-          { name: '蔭鳳梨醬（或鹽巴米酒）', amount: '2 大匙' }
+          { name: '新鮮鳳梨片或蔭鳳梨醬', amount: '半碗（或 2 大匙蔭鳳梨）' }
         ],
         steps: [
           '苦瓜對切用湯匙徹底刮除內部白膜（不苦秘訣！），切成好入口厚塊；冬瓜則削皮切塊。',
@@ -3256,7 +3303,7 @@
         familyTags: ['#電鍋先蒸再煎', '#鹹香下飯', '#年節家常必備'],
         familyTip: '👨‍👩‍👧‍👦 全家共食撇步：香腸先放電鍋蒸熟再切片下鍋爆炒蒜苗或竹筍，不僅完全不焦黑，肉質還特別軟嫩多汁！',
         ingredients: [
-          { name: '台式香腸或客家鹹豬肉、臘肉、培根', amount: '3 條' },
+          { name: '傳統香腸或客家鹹豬肉、臘肉、培根', amount: '3 條' },
           { name: '蒜苗或青蔥、竹筍、高麗菜', amount: '2 支 / 1 碗' },
           { name: '蒜片', amount: '4 瓣' }
         ],
@@ -3295,6 +3342,186 @@
           '原鍋放入甜彩椒塊與洋蔥翻炒 1 分鐘，加入兩大匙水燜至爽脆。',
           '倒回雞丁，加少許鹽巴與黑胡椒大火翻炒 20 秒混合均勻，滑嫩爆汁！'
         ]
+      },
+      {
+        id: 'tw-025',
+        title: '懷舊辦桌古早味扁魚開陽大白菜滷（白菜滷）',
+        emoji: '🥬',
+        mealSlot: '下飯主菜',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 30,
+        seasonMonths: [1, 2, 3, 4, 10, 11, 12],
+        familyTags: ['#辦桌經典', '#白菜軟爛入味', '#長輩牙口首選', '#白飯殺手', '#極軟好咬'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：大白菜慢火煨煮至完全透明軟爛，吸飽乾香菇與開陽蝦米的天然甘醇高湯，長輩好吞嚥、小孩拌飯連吃兩碗！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：大白菜與豆皮慢煨至完全軟爛化開，盛起一深碗清甜白菜與豆皮，入口即化完全不用嚼！',
+          stage2: '🎒【學童便當／下飯】：加一小匙烏醋與白胡椒粉提香，大白菜吸飽香菇甜汁裝入便當隔天更甘美！',
+          stage3: '🌶️【大人嗜香吃法】：大人碗裡可淋一小匙蒜蓉朝天椒辣油，酸辣開胃鮮香無比！'
+        },
+        ingredients: [
+          { name: '包心大白菜', amount: '半顆（撕大塊）' },
+          { name: '乾香菇', amount: '5 朵（泡軟切厚絲）' },
+          { name: '開陽（蝦米）或櫻花蝦', amount: '1 大匙（洗淨）' },
+          { name: '傳統炸豆皮或黑木耳', amount: '2 大片（撕塊）' },
+          { name: '蒜末、香菇水與高湯', amount: '各半碗' },
+          { name: '醬油、烏醋、白胡椒', amount: '各 1 小匙' }
+        ],
+        steps: [
+          '乾香菇溫水泡軟切厚絲（香菇水保留）；大白菜洗淨撕大塊；豆皮用熱水沖去表面油脂。',
+          '熱鍋加 1 大匙油，下蒜末、乾香菇絲與蝦米小火煸炒出濃郁香氣。',
+          '倒入大白菜大火翻炒至菜葉微軟，加入香菇水、高湯與豆皮煮滾。',
+          '轉中小火蓋上鍋蓋慢煨 20 分鐘至白菜軟爛透光，淋少許烏醋與白胡椒粉提味即成！'
+        ]
+      },
+      {
+        id: 'tw-026',
+        title: '家常快炒蒜香櫻花蝦蚵白菜',
+        emoji: '🥬',
+        mealSlot: '家常快炒',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 8,
+        seasonMonths: [1, 2, 3, 4, 5, 10, 11, 12],
+        familyTags: ['#快手5分鐘', '#脆嫩甘甜', '#少油煙', '#全家必備青菜', '#高纖解膩'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：蚵白菜莖厚葉嫩，大火快炒保留脆度與翠綠色澤，配櫻花蝦提鮮，小孩不挑食、主婦零油煙！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：蚵白菜梗先下鍋加少許水煨燜 1 分鐘至微軟，再下葉片翻炒，盛出嫩葉清甜好嚼！',
+          stage2: '🎒【學童便當／下飯】：拌入金黃香脆的櫻花蝦翻炒，鮮甜爽口帶便當不易發黃！',
+          stage3: '🌶️【大人香辣提味】：起鍋前投入紅辣椒絲與少許蒜酥大火嗆炒，鮮脆回甘！'
+        },
+        ingredients: [
+          { name: '新鮮蚵白菜（蚵仔白菜）', amount: '1 把（洗淨切段）' },
+          { name: '櫻花蝦或白蝦米', amount: '1 大匙' },
+          { name: '蒜末與薑絲', amount: '各 1 小匙' },
+          { name: '食用油與鹽巴', amount: '適量' }
+        ],
+        steps: [
+          '蚵白菜洗淨瀝乾，切成約 4 公分長段，將較厚的菜梗與嫩葉分開放。',
+          '熱鍋下少許油，小火爆香蒜末、薑絲與櫻花蝦出鮮香味。',
+          '先放入蚵白菜梗大火翻炒 30 秒，再下菜葉大火快速翻炒 1 分鐘。',
+          '加半小匙鹽巴與 1 大匙水嗆炒均勻，見菜葉變深綠立即起鍋盛盤！'
+        ]
+      },
+      {
+        id: 'tw-027',
+        title: '蒜香煨煮厚嫩奶油白菜佐嫩豆腐',
+        emoji: '🥬',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 12,
+        seasonMonths: [1, 2, 3, 4, 10, 11, 12],
+        familyTags: ['#奶油般滑嫩', '#長輩好吞', '#豆腐吸汁', '#少油低卡', '#小孩超愛'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：奶油白菜質地肥厚無青草澀味，與嫩豆腐一同煨煮，豆腐吸飽甘甜蔬菜原汁，長輩幼兒牙口完全無負擔！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：奶油白菜與豆腐煨至湯汁微收、質地極嫩，長輩直接舀來拌飯入口即化！',
+          stage2: '🎒【學童便當／下飯】：淋少許薄鹽醬油膏與香油，清甜多汁填入便當隔餐不變味！',
+          stage3: '🌶️【大人嗆辣吃法】：另外淋上蒜泥生辣椒薄鹽醬油，香辣滑潤超過癮！'
+        },
+        ingredients: [
+          { name: '有機奶油白菜', amount: '1 大把（切段）' },
+          { name: '嫩豆腐或板豆腐', amount: '1 盒（切厚塊）' },
+          { name: '蒜末與枸杞', amount: '各 1 小匙' },
+          { name: '香油、薄鹽醬油、高湯', amount: '各 1 大匙' }
+        ],
+        steps: [
+          '奶油白菜洗淨切段；嫩豆腐切厚塊；枸杞用少許溫水泡軟。',
+          '熱鍋加半大匙油煎香蒜末，放入豆腐塊輕輕翻動煎至表面微黃定型。',
+          '倒入奶油白菜與高湯（或溫水），蓋上鍋蓋中小火煨煮 3 分鐘至菜梗軟透。',
+          '撒入枸杞，起鍋前滴入數滴香油與薄鹽醬油，滑順清甜起鍋！'
+        ]
+      },
+      {
+        id: 'tw-028',
+        title: '阿嬤家常古早味肉絲炒白花椰菜',
+        emoji: '🥦',
+        mealSlot: '家常快炒',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 10, 11, 12],
+        familyTags: ['#阿嬤古早味', '#白花椰清甜爽脆', '#肉絲爆香', '#便當常勝', '#白飯殺手'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：白花椰菜先燜煮至花朵吸汁、菜梗微脆，起鍋前沿鍋邊熗一匙烏醋，酸香甘鹹，全家人一口接一口！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：花椰菜燜至花蕾微化、肉絲軟嫩，先盛出 1 碗軟嫩不硬的花蕾肉絲給長輩幼兒！',
+          stage2: '🎒【學童便當／下飯】：翻炒均勻吸飽肉汁，花椰菜吸附鹹甜醬香，帶便當微波依然脆甜！',
+          stage3: '🌶️【大人熗香收汁】：鍋邊熗入烏醋與粗粒黑胡椒，大火翻炒 10 秒香氣撲鼻！'
+        },
+        ingredients: [
+          { name: '新鮮白花椰菜', amount: '1 朵（切小朵撕去硬皮）' },
+          { name: '豬五花肉絲（或肉片）', amount: '150 克' },
+          { name: '蒜末與青蔥段', amount: '各 1 大匙' },
+          { name: '烏醋、醬油、白胡椒粉', amount: '各 1 小匙' },
+          { name: '溫水或高湯', amount: '半碗' }
+        ],
+        steps: [
+          '白花椰菜切小朵，菜梗撕去粗纖維硬皮；肉絲用少許醬油抓醃備用。',
+          '熱鍋下少許油爆香肉絲至變白出油，加入蒜末與蔥白炒出香氣。',
+          '倒入白花椰菜翻炒均勻，加入半碗水蓋上鍋蓋，中火燜煮 3 分鐘至花椰菜轉軟甜。',
+          '開蓋沿鍋邊淋入醬油、烏醋，大火翻炒收汁撒上胡椒粉與蔥綠即可起鍋！'
+        ]
+      },
+      {
+        id: 'tw-029',
+        title: '九層塔香爆炒多汁三杯杏鮑菇',
+        emoji: '🍄',
+        mealSlot: '下飯主菜',
+        cookingMethod: '家常快炒',
+        isDeepFried: false,
+        cookTimeMins: 15,
+        seasonMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        familyTags: ['#三杯素肉王', '#杏鮑菇Q彈爆汁', '#九層塔香氣', '#白飯殺手', '#全家搶著吃'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：杏鮑菇滾刀切塊先乾煸出水分，再下黑麻油老薑慢煸，菇肉鎖住湯汁彈牙如鮑魚，小孩搶著夾、大人超下飯！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：杏鮑菇切薄滾刀塊燒至醬汁透心、軟Q多汁，先盛起無辣椒的原味三杯菇！',
+          stage2: '🎒【學童便當／下飯】：下冰糖與醬油膏翻炒出焦糖亮澤，色香味俱全裝入便當！',
+          stage3: '🌶️【大人九層塔嗆香】：關火前投大把新鮮九層塔與生辣椒片，利用餘溫翻炒嗆香！'
+        },
+        ingredients: [
+          { name: '新鮮杏鮑菇', amount: '4 根（滾刀切塊）' },
+          { name: '九層塔', amount: '1 大把' },
+          { name: '老薑片與蒜頭', amount: '各 8 片/瓣' },
+          { name: '黑麻油', amount: '2 大匙' },
+          { name: '醬油膏、米酒、冰糖', amount: '各 1.5 大匙' }
+        ],
+        steps: [
+          '杏鮑菇洗淨擦乾，滾刀切成適口大小塊狀；老薑切薄片；蒜頭拍裂。',
+          '乾鍋不加油，先放入杏鮑菇中火乾煸 3 分鐘，逼出多餘水分且表面微金黃後盛起。',
+          '原鍋倒入黑麻油，小火慢煸老薑片至邊緣捲曲，加入蒜頭煸至金黃撲鼻。',
+          '倒回杏鮑菇，加入醬油膏、米酒與冰糖大火翻炒收汁至油亮，起鍋前拌入九層塔翻兩下盛盤！'
+        ]
+      },
+      {
+        id: 'tw-030',
+        title: '甘甜清潤！蘋果洋蔥玉米排骨湯',
+        emoji: '🍎',
+        mealSlot: '暖心靚湯',
+        cookingMethod: '燉煮／煲湯',
+        isDeepFried: false,
+        cookTimeMins: 40,
+        seasonMonths: [1, 2, 3, 4, 9, 10, 11, 12],
+        familyTags: ['#蘋果入菜天然甘甜', '#換季溫補潤肺', '#免加味精', '#排骨軟爛', '#小孩秒喝光'],
+        familyTip: '👨‍👩‍👧‍👦 全家共食撇步：蘋果帶皮燉煮釋放天然果膠與果香酵素，讓排骨肉質軟嫩脫骨、湯頭天然回甘清甜，老少換季顧氣管首選！',
+        multiGenTimeline: {
+          stage1: '👶👵【長輩幼兒先行】：蘋果與玉米燉至入口即化，湯頭清澄甘美，給長輩與幼兒暖胃潤喉！',
+          stage2: '🎒【學童便當／下飯】：鮮甜排骨撈起配少許薄鹽醬油，便當加一道軟嫩排骨肉！',
+          stage3: '🌶️【大人嗜香吃法】：大人碗裡可撒少許白胡椒粉或芹菜末，提鮮清香！'
+        },
+        ingredients: [
+          { name: '富士蘋果（或蜜蘋果）', amount: '1~2 顆（洗淨帶皮去核切塊）' },
+          { name: '豬小排或排骨塊', amount: '500 克' },
+          { name: '洋蔥', amount: '半顆（切大塊）' },
+          { name: '甜玉米', amount: '1 根（切段）' },
+          { name: '老薑片與紅棗', amount: '3 片 + 4 顆' },
+          { name: '米酒與鹽巴', amount: '少許' }
+        ],
+        steps: [
+          '排骨冷水入鍋煮至微滾川燙去血水雜質，撈起用冷水沖淨瀝乾。',
+          '蘋果外皮用少許鹽巴搓洗乾淨，帶皮去果核切厚塊；洋蔥切大塊；玉米切段。',
+          '鍋中加入約 1500ml 水，放入排骨、洋蔥、玉米、老薑片與紅棗大火煮滾。',
+          '轉小火蓋上鍋蓋燉煮 25 分鐘，放入蘋果塊再煮 15 分鐘，起鍋前加少許鹽巴調味即成！'
+        ]
       }
     ];
 
@@ -3316,21 +3543,30 @@
     const ONBOARDING_STEPS = [
       { key: 'ingredients', title: '認識你的冰箱', emoji: '🧺', description: '選幾樣家裡常買的食材，它們會加入常用清單。', choices: () => VISUAL_INGREDIENTS.map(i => ({ id: i.name, label: i.name, icon: i.icon })), multi: true },
       { key: 'methods', title: '挑選順手的煮法', emoji: '🍳', description: '可複選幾種家裡常用的煮法；首頁會先用第一個選擇篩選食譜，之後隨時可以切換。', choices: () => COOKING_METHODS.filter(m => m.code !== 'all').map(m => ({ id: m.code, label: m.label, icon: m.icon })), multi: true },
-      { key: 'cuisines', title: '選你愛吃的料理風格', emoji: '🌏', description: '可複選，第一個選擇會作為 AI 配菜的預設風格。內建食譜目前以台式為主；選其他風格後，AI 會依喜好設計。', choices: () => [{id:'台式',label:'台式',icon:'🇹🇼'},{id:'中式',label:'中式',icon:'🥢'},{id:'日式',label:'日式',icon:'🍣'},{id:'韓式',label:'韓式',icon:'🍲'},{id:'義式',label:'義式',icon:'🍝'},{id:'法式',label:'法式',icon:'🥐'},{id:'泰式',label:'泰式',icon:'🌶️'}] }
+      { key: 'cuisines', title: '選你愛吃的料理風格', emoji: '🌏', description: '可複選，第一個選擇會作為 AI 配菜的預設風格。內建食譜目前以中式家常為主；選其他風格後，AI 會依喜好設計。', choices: () => [{id:'中式',label:'中式',icon:'🥢'},{id:'日式',label:'日式',icon:'🍣'},{id:'韓式',label:'韓式',icon:'🍲'},{id:'義式',label:'義式',icon:'🍝'},{id:'法式',label:'法式',icon:'🥐'},{id:'泰式',label:'泰式',icon:'🌶️'}] }
     ];
     let onboardingStep = 0;
     let onboardingDraft = null;
 
     function getMealProfile() {
-      try { return JSON.parse(localStorage.getItem(MEAL_PROFILE_KEY) || '{}') || {}; } catch (e) { return {}; }
+      try {
+        const profile = JSON.parse(localStorage.getItem(MEAL_PROFILE_KEY) || '{}') || {};
+        if (profile.cuisines && Array.isArray(profile.cuisines)) {
+          // 避免政治爭議並平滑遷移舊資料：台式合併至中式
+          profile.cuisines = [...new Set(profile.cuisines.map(c => c === '台式' ? '中式' : c))];
+        }
+        return profile;
+      } catch (e) { return {}; }
     }
 
     function openOnboarding(edit = false) {
       const saved = getMealProfile();
+      const rawCuisines = (saved.cuisines && saved.cuisines.length > 0) ? saved.cuisines : ['中式'];
+      const migratedCuisines = [...new Set(rawCuisines.map(c => c === '台式' ? '中式' : c))];
       onboardingDraft = {
         ingredients: [...(saved.ingredients || getSavedFavorites())],
         methods: [...(saved.methods || [])],
-        cuisines: [...(saved.cuisines || ['台式'])]
+        cuisines: migratedCuisines
       };
       onboardingStep = 0;
       document.getElementById('onboardingModal').classList.remove('hidden');
@@ -3453,7 +3689,7 @@
 
       // 註冊 PWA Service Worker (支援離線快取與桌面啟動)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=9').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11').then(reg => {
           reg.update();
         }).catch(() => {});
       }
@@ -3790,7 +4026,8 @@
       const targetIngredients = rawInput || '高麗菜、五花肉';
       const chosenMethod = activeCookingMethod === 'all' ? '家常快炒' : activeCookingMethod;
       const profile = getMealProfile();
-      const chosenCuisine = (profile.cuisines || ['台式'])[0] || '台式';
+      const rawChosen = (profile.cuisines || ['中式'])[0] || '中式';
+      const chosenCuisine = rawChosen === '台式' ? '中式' : rawChosen;
 
       const btn = document.getElementById('aiGenerateBtn');
       const btnText = document.getElementById('aiGenerateBtnText');
@@ -3824,20 +4061,21 @@
       }
     }
 
-    async function callGeminiRecipeAPI(apiKey, ingredientsText, chosenMethod, chosenCuisine = '台式') {
+    async function callGeminiRecipeAPI(apiKey, ingredientsText, chosenMethod, chosenCuisine = '中式') {
+      const finalCuisine = chosenCuisine === '台式' ? '中式' : chosenCuisine;
       const noFryInstruction = excludeDeepFried
         ? '家人不吃油炸料理，嚴禁出現油炸步驟！'
         : '';
 
       const prompt = `
-你是一位精通台灣家庭與各地家常料理的主廚，請依照指定料理風格設計食譜。
-掌廚者是台灣家庭女主廚（涵蓋 30+ 職場新手媽咪至 50+、60+ 銀髮美魔女），面對全家不同成員口味需求（小孩挑食、先生/兒女帶便當、長輩牙口軟爛、主婦重視少油低負擔）。
+你是一位精通家庭與各地家常料理的主廚，請依照指定料理風格設計食譜。
+掌廚者是家庭女主廚（涵蓋 30+ 職場新手媽咪至 50+、60+ 銀髮美魔女），面對全家不同成員口味需求（小孩挑食、先生/兒女帶便當、長輩牙口軟爛、主婦重視少油低負擔）。
 目前選定的食材是：「${ingredientsText}」（現在是台灣 ${currentMonth} 月）。
 指定使用的料理方式（烹調法）為：「${chosenMethod}」。
-指定料理風格為：「${chosenCuisine}」。調味、食材搭配與菜名請符合該風格。
+指定料理風格為：「${finalCuisine}」。調味、食材搭配與菜名請符合該風格。
 ${noFryInstruction}
 
-請設計 1 道道地、營養開胃、老少咸宜的「${chosenCuisine}家常菜」（3~4人份）。
+請設計 1 道道地、營養開胃、老少咸宜的「${finalCuisine}家常菜」（3~4人份）。
 嚴格遵守：
 1. 食材清單只列客觀名稱與份量（3~4人份）。
 2. 料理步驟必須精簡為 3 到 4 個步驟，每一步不超過 35 個字，口吻溫暖直白，嚴禁複製網路食譜原文。
@@ -3888,7 +4126,7 @@ ${noFryInstruction}
 
       return {
         id: 'ai-' + Date.now(),
-        title: parsed.title || `${chosenCuisine}${chosenMethod}${ingredientsText}`,
+        title: parsed.title || `${finalCuisine}${chosenMethod}${ingredientsText}`,
         emoji: parsed.emoji || '🍲',
         mealSlot: parsed.mealSlot || '下飯主菜',
         cookingMethod: parsed.cookingMethod || chosenMethod,
@@ -3898,14 +4136,15 @@ ${noFryInstruction}
         familyTags: Array.isArray(parsed.familyTags) ? parsed.familyTags : [`#${chosenMethod}`, '#全家愛吃', '#AI主廚配菜'],
         familyTip: parsed.familyTip || '👨‍👩‍👧‍👦 全家共食撇步：起鍋前可先盛起一份原味給小孩與長輩，剩下的加點蔥蒜辣椒拌炒給年輕人下飯！',
         multiGenTimeline: parsed.multiGenTimeline || null,
-        cuisineStyle: chosenCuisine,
+        cuisineStyle: finalCuisine,
         ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [{ name: ingredientsText, amount: '適量' }],
         steps: Array.isArray(parsed.steps) ? parsed.steps.slice(0, 4) : [],
         isAiGenerated: true
       };
     }
 
-    function buildSmartLocalTaiwanRecipe(ingredientsText, chosenMethod, chosenCuisine = '台式') {
+    function buildSmartLocalTaiwanRecipe(ingredientsText, chosenMethod, chosenCuisine = '中式') {
+      const actualCuisine = chosenCuisine === '台式' ? '中式' : chosenCuisine;
       const items = ingredientsText
         .split(/[、,，\s]+/)
         .map(s => s.trim())
@@ -3916,15 +4155,15 @@ ${noFryInstruction}
 
       const methodTemplates = {
         '家常快炒': {
-          title: `台式爆香快炒${mainItem}佐${subItem}`,
+          title: `中式爆香快炒${mainItem}佐${subItem}`,
           emoji: '🥬',
           slot: '下飯主菜',
           time: 12,
-          tags: ['#熱炒店香氣', '#白飯殺手', '#12分鐘上菜'],
+          tags: ['#快炒店香氣', '#白飯殺手', '#12分鐘上菜'],
           tip: `👨‍👩‍👧‍👦 全家共食撇步：加半碗水蓋鍋悶 2 分鐘，既保有熱炒店香氣，又能讓食材軟嫩入味，大人小孩都愛吃！`,
           steps: [
             `將「${mainItem}」與「${subItem}」洗淨切成適口大小，蔥蒜拍碎備用。`,
-            `熱鍋放少許油爆香蒜頭與「${subItem}」，炒出濃濃台式家常香氣。`,
+            `熱鍋放少許油爆香蒜頭與「${subItem}」，炒出濃濃中式家常香氣。`,
             `放入「${mainItem}」與半碗熱水，蓋鍋悶煮 2 分鐘讓食材脆甜又好咬。`,
             `淋上一小匙醬油與鹽巴大火翻炒均勻，即可澎湃上桌！`
           ]
@@ -4014,7 +4253,7 @@ ${noFryInstruction}
           ]
         },
         '金黃油炸': {
-          title: `台式懷舊金黃酥炸${mainItem}${subItem}`,
+          title: `中式懷舊金黃酥炸${mainItem}${subItem}`,
           emoji: '🍤',
           slot: '下飯主菜',
           time: 20,
@@ -4035,14 +4274,14 @@ ${noFryInstruction}
         amount: idx === 0 ? '1 份（約 350 克，切適口大小）' : '適量（洗淨備用）'
       }));
       const flavorBase = {
-        '台式': ['蔥、薑、蒜頭', '醬油與米酒'], '中式': ['蔥、薑、蒜頭', '醬油與米酒'],
+        '中式': ['蔥、薑、蒜頭', '醬油與米酒'],
         '日式': ['洋蔥、薑', '醬油、味醂'], '韓式': ['蒜頭、蔥', '韓式辣醬、芝麻油'],
         '義式': ['蒜頭、洋蔥', '橄欖油、義式香料'], '法式': ['洋蔥、蒜頭', '奶油、香草'],
         '泰式': ['蒜頭、辣椒', '魚露、檸檬汁']
-      }[chosenCuisine] || ['蔥、薑、蒜頭', '醬油與鹽巴'];
+      }[actualCuisine] || ['蔥、薑、蒜頭', '醬油與米酒'];
       ingredientObjs.push({ name: flavorBase[0], amount: '少許（爆香提味）' });
       ingredientObjs.push({ name: flavorBase[1], amount: '適量' });
-      const localSteps = chosenCuisine === '台式' ? tpl.steps : [
+      const localSteps = actualCuisine === '中式' ? tpl.steps : [
         `將「${mainItem}」與「${subItem}」洗切備妥，用${flavorBase[1]}簡單調味。`,
         `依「${chosenMethod}」方式加熱料理，注意火候並確認食材熟透。`,
         `加入「${flavorBase[0]}」與少量水或高湯，煮至食材熟透入味。`,
@@ -4051,7 +4290,7 @@ ${noFryInstruction}
 
       return {
         id: 'ai-' + Date.now(),
-        title: chosenCuisine === '台式' ? tpl.title : `${chosenCuisine}風味${mainItem}${subItem}`,
+        title: actualCuisine === '中式' ? tpl.title : `${actualCuisine}風味${mainItem}${subItem}`,
         emoji: tpl.emoji,
         mealSlot: tpl.slot,
         cookingMethod: chosenMethod,
@@ -4059,8 +4298,8 @@ ${noFryInstruction}
         cookTimeMins: tpl.time,
         seasonMonths: [currentMonth],
         familyTags: tpl.tags,
-        familyTip: chosenCuisine === '台式' ? tpl.tip : `👨‍👩‍👧‍👦 全家共食撇步：先依${chosenCuisine}風味調好味道，再替長輩與小朋友盛出較清淡的一份。`,
-        cuisineStyle: chosenCuisine,
+        familyTip: actualCuisine === '中式' ? tpl.tip : `👨‍👩‍👧‍👦 全家共食撇步：先依${actualCuisine}風味調好味道，再替長輩與小朋友盛出較清淡的一份。`,
+        cuisineStyle: actualCuisine,
         ingredients: ingredientObjs,
         steps: localSteps,
         isAiGenerated: true
